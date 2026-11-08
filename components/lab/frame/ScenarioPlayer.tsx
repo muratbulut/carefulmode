@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import type { MascotMood } from "@/components/mascot/Mascot";
 import { Toast } from "@/components/status/Toast";
 import { withNext } from "@/lib/account/shared";
 import type { HackedStory, LinkPage, ShopSms } from "@/lib/lab/story";
@@ -38,6 +39,9 @@ export type ScenarioPlayerProps = {
   /** Yönetim önizlemesi: rapor sayfaya gidilmeden yerinde açılır, "Tekrar dene" oynatıcıyı sıfırlar. */
   onReport?: () => void;
 };
+
+/** Hacklenince alarmdan önce şeritteki maskotun kırmızıya dönmesi için kısa bekleme. */
+const HACKED_PAUSE_MS = 900;
 
 /** call: görevli odada başlangıç kartından önce velinin araması. */
 type Phase = "call" | "intro" | "playing" | "hacked" | "scene";
@@ -76,6 +80,12 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
   const [exitOpen, setExitOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [finishing, setFinishing] = useState(false);
+  // Şeritteki maskot: bildirilen mesajda bir an şüphelenir, hacklenince kırmızıya döner.
+  const [mood, setMood] = useState<MascotMood>("idle");
+  const moodTimer = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (moodTimer.current !== null) window.clearTimeout(moodTimer.current);
+  }, []);
 
   const { state } = session;
   const { template, items, tasks } = scenario;
@@ -132,6 +142,14 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
 
   function move(id: string, to: Folder) {
     session.track({ type: "item_moved", item: id, to });
+    // Öğrencinin kendi kararına eşlik eder; doğru mu yanlış mı söylemez (o raporda, sunucudan gelir).
+    if (to === "spam") flashMood("suspicious");
+  }
+
+  function flashMood(next: MascotMood, ms = 1800) {
+    if (moodTimer.current !== null) window.clearTimeout(moodTimer.current);
+    setMood(next);
+    moodTimer.current = window.setTimeout(() => setMood("idle"), ms);
   }
 
   function attachment(id: string) {
@@ -153,7 +171,11 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
   function hacked(next: HackedStory) {
     setBrowser(null);
     setStory(next);
-    setPhase("hacked");
+    if (moodTimer.current !== null) window.clearTimeout(moodTimer.current);
+    setMood("hacked");
+    // Önce şeritteki maskot hacklenir (göz X, gövde kırmızı), sonra alarm. "Hareketi azalt" açıksa hemen.
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) setPhase("hacked");
+    else moodTimer.current = window.setTimeout(() => setPhase("hacked"), HACKED_PAUSE_MS);
   }
 
   async function submitTrap() {
@@ -235,6 +257,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
       const story = result.hacked;
       if (story.call && story.call.lines.length > 0) {
         setBrowser(null);
+        setMood("hacked");
         setEnding({ kind: "bad", story });
       } else hacked(story);
       return null;
@@ -335,6 +358,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
         total={tasks.length}
         done={progress.done}
         onExit={() => setExitOpen(true)}
+        mood={mood}
       />
 
       <main className="mx-auto flex min-h-0 w-full max-w-[1360px] flex-1 gap-5 lg:items-start lg:px-6 lg:pt-5 lg:pb-8">

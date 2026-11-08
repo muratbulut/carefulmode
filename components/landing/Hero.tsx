@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
+import { HeroMascot } from "@/components/mascot/HeroMascot";
 import { getMessages, rich } from "@/lib/i18n";
 import { routes } from "@/lib/navigation";
 import { PostamScene } from "./PostamScene";
@@ -13,6 +14,7 @@ import { UsbScene } from "./scenes/UsbScene";
 /**
  * Tanıtım sayfasının üst kısmı (Tema H, H13A3 masaüstü ve 1.3D telefon). Sağdaki alanda altı oda
  * sahnesi her ziyarette karışık sırayla döner (HeroScenes); ilki Postam, sayfa canlanana kadar o görünür.
+ * Başlığın üstündeki büyük maskot dokununca tepki verir, uzun süre hareket olmazsa uyur (HeroMascot).
  */
 export function Hero() {
   const t = getMessages().landing.hero;
@@ -20,6 +22,8 @@ export function Hero() {
     <>
       <section className="relative mx-auto flex max-w-[1200px] flex-col gap-[18px] px-4 pt-7 pb-2 lg:flex-row lg:flex-wrap lg:items-center lg:gap-14 lg:px-6 lg:py-12">
         <div className="flex flex-col gap-[18px] lg:flex-[1_1_460px] lg:gap-6">
+          {/* Büyük maskot başlığın üstünde; sağdaki dönen oda sahneleri yerinde kalır (maskot tuvali). */}
+          <HeroMascot className="w-[112px] self-start lg:w-[168px]" />
           <div className="flex items-center gap-1.5 self-start rounded-full bg-accent/12 px-2.5 py-[5px] text-[11px] font-bold tracking-[0.8px] text-accent-light lg:gap-2 lg:px-3 lg:py-1.5 lg:text-sm lg:tracking-[1px]">
             <span className="size-[7px] rounded-full bg-success lg:size-2" aria-hidden="true" />
             {t.eyebrow}

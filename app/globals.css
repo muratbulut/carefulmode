@@ -67,6 +67,7 @@
   --glow: #67e8f9;
   --logo: #22d3ee;
   --logo-eye: #0b1020;
+  --logo-white: #ffffff;
 
   --success: #34d399;
   --success-fg: #34d399;
@@ -321,6 +322,7 @@
   --glow: #67e8f9;
   --logo: #0891b2;
   --logo-eye: #0f172a;
+  --logo-white: #ffffff;
 
   --success: #34d399;
   --success-fg: #047857;
@@ -568,6 +570,7 @@
   --accent-light: #67e8f9;
   --logo: #22d3ee;
   --logo-eye: #0b1020;
+  --logo-white: #ffffff;
   --success-fg: #34d399;
   --success-subtle: #0f2a26;
   --success-subtle-fg: #a7f3d0;

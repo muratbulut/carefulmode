@@ -151,7 +151,7 @@ export function SubmitButton({ children, disabled, className }: { children: Reac
     <button type="submit" disabled={disabled || pending} aria-busy={pending} className={cn(primaryButtonClass, className)}>
       {pending ? (
         <>
-          <Spinner className="size-4 border-on-accent/30 border-t-on-accent" />
+          <Spinner tone="onAccent" />
           {t.working}
         </>
       ) : (

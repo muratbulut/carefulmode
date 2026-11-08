@@ -1,0 +1,655 @@
+/*
+ * Maskot: logodaki gözlü düğme (maskot tuvali, "Sitede oynanabilir" sayfası).
+ * Renkler yalnızca tema değişkenlerinden gelir; göz beyazı maskotun parçasıdır (lib/brand.tsx).
+ * Sınıflar "mc-" ile başlar. Ruh hâli kökteki .mc-mood-* sınıfıyla, evcil tepki .mc-r-* sınıfıyla seçilir.
+ *
+ * Bakış yönü iki değişkenle gelir: --mc-x ve --mc-y (-1 ile 1 arası; 1 = en sağ / en aşağı).
+ * --mc-reach göz bebeğinin en çok kaç birim kayacağıdır: Mascot'ta 10, isim hâlinde 86 (kendi ölçeğinde).
+ * "Hareketi azalt" açıksa globals.css bütün hareketleri durdurur; renk ve göz şekli yine değişir.
+ */
+
+.mc {
+  --mc-x: 0.6;
+  --mc-y: 0;
+  --mc-reach: 10px;
+  --mc-off: -52px;
+  overflow: visible;
+}
+/* İsim hâlindeki maskot kendi ölçeğinde (1 maskot birimi = 8,6 isim birimi). */
+.mc.mc-wordmark {
+  --mc-reach: 86px;
+  --mc-off: -465px;
+}
+
+.mc .mc-trk {
+  fill: var(--logo);
+  transition: fill 0.4s ease;
+}
+.mc .mc-white {
+  fill: var(--logo-white);
+}
+.mc .mc-ink {
+  fill: var(--logo-eye);
+}
+.mc .mc-stroke {
+  fill: none;
+  stroke: var(--logo-eye);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mc .mc-ball,
+.mc .mc-pupil,
+.mc .mc-eye,
+.mc .mc-heart,
+.mc .mc-body,
+.mc .mc-badge {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.mc .mc-lid {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+}
+
+.mc .mc-knob {
+  transition: transform 0.45s ease;
+}
+.mc .mc-look {
+  transform: translate(calc(var(--mc-x) * var(--mc-reach)), calc(var(--mc-y) * var(--mc-reach) * 0.9));
+  transition: transform 0.15s ease-out;
+}
+.mc .mc-eye {
+  transition:
+    transform 0.18s ease,
+    opacity 0.15s ease;
+}
+.mc .mc-pupil {
+  transition: transform 0.2s ease;
+}
+.mc .mc-ball {
+  transition: transform 0.25s ease;
+}
+.mc .mc-body {
+  transition: transform 0.4s ease;
+}
+.mc .mc-happy,
+.mc .mc-heart,
+.mc .mc-x,
+.mc .mc-arc,
+.mc .mc-zz,
+.mc .mc-badge,
+.mc .mc-lid {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Arada bir göz kırpma (her zamanki hâl). */
+.mc.mc-blink .mc-eye {
+  animation: mc-blink 5s ease-in-out infinite;
+}
+@keyframes mc-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.12);
+  }
+}
+
+/* Şifre yazılırken göz kapalı. Sayfadaki her maskot kapatır (FormMascot html'e data-mascot-eyes yazar). */
+.mc.mc-mood-shut .mc-eye,
+html[data-mascot-eyes="shut"] .mc-follow .mc-eye {
+  animation: none;
+  transform: scaleY(0.12);
+}
+
+/* Dikkatle bakıyor: odada bir bağlantının üstüne gelindi (tuzak da olsa, güvenli de olsa aynı). */
+.mc.mc-mood-look .mc-pupil {
+  transform: scale(0.86);
+}
+
+/* Şüpheli: öğrenci bir mesajı bildirdi ya da istenmeyene taşıdı. */
+.mc.mc-mood-suspicious .mc-trk {
+  fill: var(--warning);
+}
+.mc.mc-mood-suspicious .mc-lid {
+  opacity: 1;
+}
+
+/* Şaşkın: mor, baş şişer, göz bebeği küçülür. */
+.mc.mc-mood-surprised .mc-trk {
+  fill: var(--purple);
+}
+.mc.mc-mood-surprised .mc-ball {
+  transform: scale(1.08);
+}
+.mc.mc-mood-surprised .mc-pupil {
+  transform: scale(0.55);
+}
+
+/* Mutlu: yeşil, ^ göz, iki zıplama, köşede onay. */
+.mc.mc-mood-happy .mc-trk {
+  fill: var(--success);
+}
+.mc.mc-mood-happy .mc-eye {
+  opacity: 0;
+}
+.mc.mc-mood-happy .mc-happy,
+.mc.mc-mood-happy .mc-badge {
+  opacity: 1;
+}
+.mc.mc-mood-happy .mc-body {
+  animation: mc-hop 1s ease-out;
+}
+@keyframes mc-hop {
+  0% {
+    transform: translateY(0);
+  }
+  20% {
+    transform: translateY(-10px);
+  }
+  40% {
+    transform: translateY(0);
+  }
+  60% {
+    transform: translateY(-6px);
+  }
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Kalp göz: yeni rozet. */
+.mc.mc-mood-love .mc-trk {
+  fill: var(--pink);
+}
+.mc.mc-mood-love .mc-eye {
+  opacity: 0;
+}
+.mc.mc-mood-love .mc-heart {
+  opacity: 1;
+  animation: mc-beat 1.3s ease-out;
+}
+@keyframes mc-beat {
+  0% {
+    transform: scale(0.3);
+  }
+  25% {
+    transform: scale(1.15);
+  }
+  40% {
+    transform: scale(0.95);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  80%,
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Hacklendi: kırmızı, göz X, baş hafifçe düşer. */
+.mc.mc-mood-hacked .mc-trk {
+  fill: var(--danger);
+}
+.mc.mc-mood-hacked .mc-eye {
+  opacity: 0;
+}
+.mc.mc-mood-hacked .mc-x {
+  opacity: 1;
+}
+.mc.mc-mood-hacked .mc-body {
+  transform: rotate(-3deg) translateY(2px);
+}
+
+/* Uyku ve kapalı (404): düğme sola kayar, gövde soluk. */
+.mc.mc-mood-sleep .mc-trk,
+.mc.mc-mood-off .mc-trk,
+html[data-mascot="sleep"] .mc-follow .mc-trk {
+  fill: var(--line-strong);
+}
+.mc.mc-mood-sleep .mc-knob,
+.mc.mc-mood-off .mc-knob,
+html[data-mascot="sleep"] .mc-follow .mc-knob {
+  transform: translateX(var(--mc-off));
+}
+.mc.mc-mood-sleep .mc-eye,
+html[data-mascot="sleep"] .mc-follow .mc-eye {
+  animation: none;
+  opacity: 0;
+}
+.mc.mc-mood-sleep .mc-arc,
+html[data-mascot="sleep"] .mc-follow .mc-arc {
+  opacity: 1;
+}
+.mc.mc-mood-sleep .mc-zz {
+  opacity: 1;
+  animation: mc-zz 2.4s ease-in-out infinite;
+}
+@keyframes mc-zz {
+  0%,
+  100% {
+    transform: translateY(3px);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+/* 404: kapalı düğmenin gözü etrafa bakar; dokununca açılmaya çalışır ama açılamaz. */
+.mc.mc-mood-off .mc-look {
+  animation: mc-around 6s ease-in-out infinite;
+}
+@keyframes mc-around {
+  0%,
+  8%,
+  68%,
+  100% {
+    transform: translate(0, 0);
+  }
+  14%,
+  26% {
+    transform: translate(-8px, 1px);
+  }
+  32%,
+  44% {
+    transform: translate(8px, 1px);
+  }
+  50%,
+  62% {
+    transform: translate(0, -7px);
+  }
+}
+.mc.mc-mood-off.mc-r-try .mc-knob {
+  animation: mc-try 1.2s ease-in-out;
+}
+@keyframes mc-try {
+  0%,
+  60%,
+  100% {
+    transform: translateX(-52px);
+  }
+  30%,
+  45% {
+    transform: translateX(-30px);
+  }
+  75% {
+    transform: translateX(-40px);
+  }
+}
+
+/* Yükleniyor: düğme gider gelir, gövde açılıp kapanır. Yazı yok. */
+.mc.mc-mood-loading .mc-knob {
+  animation: mc-load 1.8s ease-in-out infinite;
+}
+.mc.mc-mood-loading .mc-trk {
+  animation: mc-load-track 1.8s ease-in-out infinite;
+}
+@keyframes mc-load {
+  0%,
+  95%,
+  100% {
+    transform: translateX(-52px);
+  }
+  45%,
+  50% {
+    transform: translateX(0);
+  }
+}
+@keyframes mc-load-track {
+  0%,
+  95%,
+  100% {
+    fill: var(--line-strong);
+  }
+  45%,
+  50% {
+    fill: var(--logo);
+  }
+}
+/* Ana renk düğmenin içinde: gövde düğmenin yazı rengini alır, yine de görünür kalır. */
+.mc.mc-on-accent .mc-trk {
+  fill: var(--on-accent);
+  animation: none;
+}
+
+/* Çıkış: düğme kapanır, maskot uyur. */
+.mc.mc-mood-out .mc-trk {
+  fill: var(--line-strong);
+  transition: fill 1s ease 0.2s;
+}
+.mc.mc-mood-out .mc-knob {
+  transform: translateX(-52px);
+  transition: transform 0.9s ease;
+}
+.mc.mc-mood-out .mc-eye {
+  opacity: 0;
+  transition: opacity 0.2s ease 0.7s;
+}
+.mc.mc-mood-out .mc-arc {
+  opacity: 1;
+  transition: opacity 0.2s ease 0.8s;
+}
+.mc.mc-mood-out .mc-zz {
+  opacity: 1;
+  transition: opacity 0.4s ease 1.1s;
+}
+
+/* ---------- Evcil tepkiler (ana sayfadaki büyük maskot; her tıklamada sıradaki) ---------- */
+
+.mc.mc-r-blink .mc-eye {
+  animation: mc-r-blink 0.9s ease-in-out;
+}
+@keyframes mc-r-blink {
+  0%,
+  40%,
+  80%,
+  100% {
+    transform: scaleY(1);
+  }
+  20%,
+  60% {
+    transform: scaleY(0.12);
+  }
+}
+
+.mc.mc-r-cheer .mc-trk {
+  animation: mc-r-green 1.4s ease-in-out;
+}
+@keyframes mc-r-green {
+  15%,
+  80% {
+    fill: var(--success);
+  }
+}
+.mc.mc-r-cheer .mc-eye,
+.mc.mc-r-love .mc-eye {
+  animation: mc-r-hide 1.4s steps(1);
+}
+.mc.mc-r-cheer .mc-happy {
+  animation: mc-r-show 1.4s steps(1);
+}
+@keyframes mc-r-hide {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  10%,
+  85% {
+    opacity: 0;
+  }
+}
+@keyframes mc-r-show {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  10%,
+  85% {
+    opacity: 1;
+  }
+}
+.mc.mc-r-cheer .mc-body {
+  animation: mc-r-hop 1.4s ease-out;
+}
+@keyframes mc-r-hop {
+  0%,
+  10%,
+  34%,
+  58%,
+  100% {
+    transform: translateY(0);
+  }
+  22% {
+    transform: translateY(-10px);
+  }
+  46% {
+    transform: translateY(-7px);
+  }
+}
+
+.mc.mc-r-look .mc-look {
+  animation: mc-r-look 1.8s ease-in-out;
+}
+@keyframes mc-r-look {
+  0%,
+  100% {
+    transform: translate(6px, 0);
+  }
+  15%,
+  32% {
+    transform: translate(-9px, 1px);
+  }
+  45%,
+  60% {
+    transform: translate(8px, 1px);
+  }
+  72%,
+  86% {
+    transform: translate(0, -8px);
+  }
+}
+
+.mc.mc-r-surprise .mc-trk {
+  animation: mc-r-purple 1.4s ease-in-out;
+}
+@keyframes mc-r-purple {
+  12%,
+  82% {
+    fill: var(--purple);
+  }
+}
+.mc.mc-r-surprise .mc-ball {
+  animation: mc-r-grow 1.4s ease-out;
+}
+@keyframes mc-r-grow {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  12% {
+    transform: scale(1.14);
+  }
+  20%,
+  82% {
+    transform: scale(1.08);
+  }
+}
+.mc.mc-r-surprise .mc-pupil {
+  animation: mc-r-small 1.4s ease-out;
+}
+@keyframes mc-r-small {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  12%,
+  82% {
+    transform: scale(0.5);
+  }
+}
+.mc.mc-r-surprise .mc-look {
+  animation: mc-r-center 1.4s ease-out;
+}
+@keyframes mc-r-center {
+  0%,
+  100% {
+    transform: translate(6px, 0);
+  }
+  12%,
+  82% {
+    transform: translate(0, 0);
+  }
+}
+
+.mc.mc-r-dizzy .mc-look {
+  animation: mc-r-spin 1.6s linear;
+}
+@keyframes mc-r-spin {
+  0%,
+  100% {
+    transform: translate(6px, 0);
+  }
+  12% {
+    transform: translate(3px, 6px);
+  }
+  25% {
+    transform: translate(-3px, 8px);
+  }
+  37% {
+    transform: translate(-8px, 3px);
+  }
+  50% {
+    transform: translate(-8px, -3px);
+  }
+  62% {
+    transform: translate(-3px, -8px);
+  }
+  75% {
+    transform: translate(3px, -6px);
+  }
+  87% {
+    transform: translate(7px, -2px);
+  }
+}
+.mc.mc-r-dizzy .mc-body {
+  animation: mc-r-tilt 1.6s ease-in-out;
+}
+@keyframes mc-r-tilt {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+  75% {
+    transform: rotate(-3deg);
+  }
+}
+
+.mc.mc-r-love .mc-trk {
+  animation: mc-r-pink 1.6s ease-in-out;
+}
+@keyframes mc-r-pink {
+  12%,
+  85% {
+    fill: var(--pink);
+  }
+}
+.mc.mc-r-love .mc-heart {
+  animation: mc-r-beat 1.6s ease-out;
+}
+@keyframes mc-r-beat {
+  0%,
+  9% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  10% {
+    opacity: 1;
+    transform: scale(0.3);
+  }
+  22%,
+  44% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  32% {
+    opacity: 1;
+    transform: scale(0.95);
+  }
+  54%,
+  85% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  86%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+.mc.mc-r-nap .mc-trk {
+  animation: mc-r-gray 2.6s ease-in-out;
+}
+@keyframes mc-r-gray {
+  14%,
+  80% {
+    fill: var(--line-strong);
+  }
+}
+.mc.mc-r-nap .mc-knob {
+  animation: mc-r-nap 2.6s ease-in-out;
+}
+@keyframes mc-r-nap {
+  0%,
+  4%,
+  100% {
+    transform: translateX(0);
+  }
+  16%,
+  80% {
+    transform: translateX(-52px);
+  }
+  92% {
+    transform: translateX(3px);
+  }
+}
+.mc.mc-r-nap .mc-eye {
+  animation: mc-r-doze 2.6s ease-in-out;
+}
+@keyframes mc-r-doze {
+  0%,
+  90%,
+  100% {
+    transform: scaleY(1);
+  }
+  10%,
+  84% {
+    transform: scaleY(0.12);
+  }
+}
+.mc.mc-r-nap .mc-zz {
+  animation: mc-r-zz 2.6s ease-out;
+}
+@keyframes mc-r-zz {
+  0%,
+  18%,
+  82%,
+  100% {
+    opacity: 0;
+  }
+  28%,
+  74% {
+    opacity: 1;
+  }
+}
+
+/* Tıklanabilir maskotun odak halkası. */
+.mc-button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 999px;
+}
+
+/* Sayfa geçişi örtüsü: belirerek gelir. */
+.mc-overlay {
+  animation: fade-in 0.2s ease-out both;
+}
+
+/* Tehlike düğmesinin içinde (ekipten çıkar gibi). */
+.mc.mc-on-danger .mc-trk {
+  fill: var(--on-danger);
+}

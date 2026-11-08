@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import "@fontsource-variable/dm-sans";
 import "@fontsource-variable/space-grotesk";
 import "@fontsource-variable/jetbrains-mono";
 import "./globals.css";
+import { PageOverlay } from "@/components/mascot/PageOverlay";
 import { ConnectionBanner } from "@/components/status/ConnectionBanner";
 import { InlineScript } from "@/components/theme/InlineScript";
 import { brand } from "@/lib/brand";
@@ -38,6 +40,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-dvh">
         {children}
         <ConnectionBanner />
+        <Suspense fallback={null}>
+          <PageOverlay />
+        </Suspense>
       </body>
     </html>
   );

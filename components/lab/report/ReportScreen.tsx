@@ -10,6 +10,7 @@ import { format, getMessages, rich } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { BadgeToast } from "@/components/status/BadgeToast";
 import type { BadgeCode } from "@/lib/progress/badges";
+import { Mascot, type MascotMood } from "@/components/mascot/Mascot";
 import { ReportSteps } from "./ReportSteps";
 import { ReportTips } from "./ReportTips";
 import { SignsCard } from "./SignsCard";
@@ -27,6 +28,8 @@ export type ReportScreenProps = {
   /** Bu denemeyle yeni kazanılan rozetler; rapor ilk açıldığında sağ üstte bildirim olarak çıkar. */
   newBadges?: BadgeCode[];
 };
+
+const reportMood: Record<ReportStatus, MascotMood> = { safe: "happy", risky: "suspicious", hacked: "hacked" };
 
 const statusStyle: Record<ReportStatus, { badge: string; ring: string; bar: string; glow: string; Icon: typeof ShieldCheck }> = {
   safe: { badge: "border-success/50 bg-success/12 text-success-fg", ring: "stroke-success", bar: "bg-success", glow: "var(--success)", Icon: ShieldCheck },
@@ -235,10 +238,14 @@ export function ReportScreen({ view, lab, backHref, crumbs, facts, history, acti
           />
           <ScoreRing score={view.score} status={view.status} />
           <div className="relative flex flex-1 flex-col items-center gap-3.5 lg:items-start">
-            <span className={cn("inline-flex h-8 items-center gap-2 rounded-full border px-3.5 text-[13px] font-bold tracking-[0.6px]", style.badge)}>
-              <style.Icon className="size-4" strokeWidth={2.2} aria-hidden="true" />
-              {t.status[view.status]}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className={cn("inline-flex h-8 items-center gap-2 rounded-full border px-3.5 text-[13px] font-bold tracking-[0.6px]", style.badge)}>
+                <style.Icon className="size-4" strokeWidth={2.2} aria-hidden="true" />
+                {t.status[view.status]}
+              </span>
+              {/* Yeni rozet varken kalp göz, yoksa sonuca göre: güvende mutlu, riskli şüpheli, hacklendi kırmızı. */}
+              <Mascot mood={badges.length > 0 ? "love" : reportMood[view.status]} className="h-auto w-[56px] flex-none" />
+            </div>
             <h1 className="font-heading text-[28px] leading-[1.12] font-bold lg:text-[40px]">{view.title}</h1>
             <div className="flex flex-col gap-1">
               <span className="text-xs font-bold tracking-[0.8px] text-accent-fg">{format(t.kicker, { topic: lab.topic.toLocaleUpperCase("tr") })}</span>

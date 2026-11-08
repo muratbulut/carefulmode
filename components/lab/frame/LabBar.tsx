@@ -1,6 +1,8 @@
 "use client";
 
 import { ArrowLeft, ClipboardList, X } from "lucide-react";
+import type { MascotMood } from "@/components/mascot/Mascot";
+import { RoomMascot } from "@/components/mascot/RoomMascot";
 import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +19,8 @@ export function SimulationBadge({ short }: { short?: boolean }) {
 
 /**
  * Lab çerçevesinin üst şeridi (Lab-Cerceve). Masaüstünde Çık, lab türü ve adı, SİMÜLASYON,
- * rapora yazılan karar sayısı ve görev ilerlemesi; telefonda kapat, ad ve SİM.
+ * rapora yazılan karar sayısı ve görev ilerlemesi; telefonda kapat, ad ve SİM. En sağda maskot:
+ * bağlantılara bakar, bildirilen mesajda şüphelenir, hacklenince kırmızıya döner (mood).
  */
 export function LabBar({
   kicker,
@@ -27,6 +30,7 @@ export function LabBar({
   total,
   done,
   onExit,
+  mood = "idle",
 }: {
   kicker: string;
   title: string;
@@ -36,6 +40,7 @@ export function LabBar({
   /** Görev parçaları: bitti, şu an, sırada. */
   done: boolean[];
   onExit: () => void;
+  mood?: MascotMood;
 }) {
   const t = getMessages().lab.frame;
   const current = done.indexOf(false);
@@ -70,6 +75,8 @@ export function LabBar({
               ))}
             </span>
             <span className="text-sm font-bold text-fg-3">{format(t.task, { n: taskNo, total })}</span>
+            <span aria-hidden="true" className="h-7 w-px bg-line" />
+            <RoomMascot mood={mood} className="w-[52px]" />
           </div>
         </div>
       </div>
@@ -86,6 +93,7 @@ export function LabBar({
         </button>
         <h1 className="min-w-0 flex-1 truncate text-base font-bold">{title}</h1>
         <SimulationBadge short />
+        <RoomMascot mood={mood} className="w-[44px]" />
       </div>
     </>
   );

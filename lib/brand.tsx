@@ -16,7 +16,7 @@ export const brand = {
  * Gövde --logo, göz bebeği --logo-eye; ikisi de iki temada globals.css'te tanımlı.
  * Göz beyazı her temada beyazdır (maskotun parçası, tema rengi değil).
  */
-const EYE_WHITE = "#ffffff";
+export const EYE_WHITE = "#ffffff";
 
 /** Maskot simgesi (128×72). Süs olarak kullanılır; erişilebilir adı çevresindeki bağlantı verir. */
 export function LogoMark(props: SVGProps<SVGSVGElement>) {
@@ -60,15 +60,31 @@ const WORDMARK_RIGHT = "M7480 0 7453 -214 7488 -284 7454 -372 7502 -770H7714L765
  * Çevresindeki bağlantı ürün adını söylüyorsa süstür (varsayılan); tek başına duruyorsa
  * `labelled` ile ekran okuyucuya ürün adı okunur.
  */
-export function Wordmark({ labelled = false, ...props }: SVGProps<SVGSVGElement> & { labelled?: boolean }) {
+export function Wordmark({
+  labelled = false,
+  live = false,
+  className,
+  ...props
+}: SVGProps<SVGSVGElement> & { labelled?: boolean; live?: boolean }) {
   const a11y = labelled ? { role: "img", "aria-label": brand.name } : { "aria-hidden": true };
+  // Canlı hâlde (üst menü) O harfindeki maskotun gözü bakar ve kırpar; sınıflar components/mascot/mascot.css'te.
+  // Göz bebeği topun ortasında çizilir, varsayılan bakış (sağa) --mc-x ile gelir; düz hâlde aynı yerde durur.
+  const liveClass = live ? "mc mc-wordmark mc-follow mc-blink" : undefined;
+  const lookStyle = live ? undefined : { transform: "translate(51.6px, 0)" };
   return (
-    <svg viewBox="0 -790 8436 812" fill="currentColor" {...a11y} {...props}>
+    <svg viewBox="0 -790 8436 812" fill="currentColor" {...a11y} {...props} className={[liveClass, className].filter(Boolean).join(" ") || undefined}>
       <path d={WORDMARK_LEFT} />
-      <rect x="5808" y="-566" width="1031" height="550" rx="275" fill="var(--logo)" />
-      <circle cx="6548" cy="-290" r="206" fill={EYE_WHITE} />
-      <circle cx="6600" cy="-290" r="90" fill="var(--logo-eye)" />
-      <circle cx="6631" cy="-327" r="27.5" fill={EYE_WHITE} />
+      <rect className="mc-trk" x="5808" y="-566" width="1031" height="550" rx="275" fill="var(--logo)" />
+      <g className="mc-knob">
+        <circle className="mc-ball" cx="6548" cy="-290" r="206" fill={EYE_WHITE} />
+        <g className="mc-look" style={lookStyle}>
+          <g className="mc-eye">
+            <circle cx="6548" cy="-290" r="90" fill="var(--logo-eye)" />
+            <circle cx="6579" cy="-326" r="27.5" fill={EYE_WHITE} />
+          </g>
+        </g>
+        {live ? <path className="mc-arc" d="M6454 -290 Q6548 -221 6642 -290" fill="none" stroke="var(--logo-eye)" strokeWidth="43" strokeLinecap="round" /> : null}
+      </g>
       <path d={WORDMARK_RIGHT} />
     </svg>
   );

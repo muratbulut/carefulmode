@@ -18,6 +18,8 @@ Doküman ve tasarım notları Türkçe terimleri kullanır; bu dosya ikisini eş
 | Temel yol (temel eğitim ve onun senaryoları; mahalle rozeti bunu sayar) | basic path (`isBasicPath`) |
 | Ödevin odaları (seçilenler ve onları açan eğitimler) | `Assignment.labIds`, `homeworkLabs`, `homeworkSelection` (`lib/classroom/homework.ts`) |
 | Dostluk Parkı (güvenli iletişim mahallesi), Dost eli rozeti | `dostluk-parki`, rozet `dost-eli`; renk `pink`, ikon `heart` |
+| Maskot (logodaki gözlü düğme), ruh hâli, evcil tepki | mascot (`Mascot`, `components/mascot/`), `MascotMood`, `petReactions` |
+| Yükleniyor örtüsü (sayfa geçişinde tam ekran) | `PageOverlay` |
 | Tanıtım sayfasının dönen sahneleri (odadaki sahne türüyle ilgisi yok, süs) | `HeroScenes`, `SceneStore`, `shuffleScenes` (`components/landing/scenes/`) |
 | Sahne türü, şablon | `SceneTemplate`; içerik şeması `lib/lab/content.ts`, sahneler `components/lab/inbox/`, `messaging/`, `training/` |
 | Lab çerçevesi (oynatıcı, görev paneli, hacklendin, rapor) | `components/lab/frame/` (`ScenarioPlayer`, `TaskPanel`), `components/lab/hacked/`, `components/lab/report/` |

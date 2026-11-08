@@ -100,6 +100,13 @@ export const tr = {
     offlineText: "Bağlantı gelince kaldığın yerden devam edersin.",
   },
 
+  // Maskot konuşmaz, yanında yazı olmaz; bu metinler yalnızca ekran okuyucu ve düğme adı içindir.
+  mascot: {
+    pet: "Maskotu sev",
+    pageLoading: "Sayfa açılıyor",
+    signingOut: "Çıkış yapılıyor",
+  },
+
   errors: {
     title: "Bir şeyler ters gitti, bizim hatamız",
     pageTitle: "Bir şeyler ters gitti",
@@ -111,6 +118,8 @@ export const tr = {
   },
 
   notFound: {
+    // Büyük yazı: ilk ve son rakam yazılır, ortadaki sıfırın yerinde kapalı maskot durur.
+    code: "404",
     heading: "Bu sayfa yok",
     text: "Adres yanlış yazılmış ya da sayfa kaldırılmış olabilir. Aşağıdan devam edebilirsin.",
     home: "Ana sayfaya dön",
@@ -659,6 +668,10 @@ export const tr = {
       title: "Yükleniyor",
       description: 'İçeriğin yerini tutan gri bloklar. 10 sn sürerse "Hâlâ yükleniyor" satırı çıkar.',
       text: "Odalar yükleniyor…",
+    },
+    mascot: {
+      title: "Maskot",
+      description: "Bütün ruh hâlleri: her zamanki, bakıyor, göz kapalı, şüpheli, şaşkın, mutlu, kalp göz, hacklendi, uyku, kapalı (404), yükleniyor, çıkış.",
     },
     offline: {
       title: "Bağlantı koptu",
