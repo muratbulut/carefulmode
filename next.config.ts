@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { documentContentSecurityPolicy } from "./lib/admin/application-document";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -92,6 +93,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
+      // Öğretmenlik belgesi kendi, daha sıkı CSP'siyle gelir (sandbox, yalnızca bu sitenin
+      // önizleme penceresi çerçeveye alabilir). Buradaki başlıklar rota yanıtındaki aynı adlı
+      // başlığın yerine geçtiği için belgeninki burada yeniden verilir; aynı yolu tutan iki
+      // kuraldan sonraki geçerlidir.
+      {
+        source: "/yonetim/talepler/:talep/belge",
+        headers: [{ key: "Content-Security-Policy", value: documentContentSecurityPolicy }],
+      },
     ];
   },
   // "Lab" yerine "Oda" (13 Ekim 2026): eski adresler yenisine kalıcı olarak yönlenir, paylaşılmış
