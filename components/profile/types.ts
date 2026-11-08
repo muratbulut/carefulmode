@@ -40,6 +40,6 @@ export type ProfileProgress = {
   showcase: BadgeCode[];
 };
 
-// Sıra Tur 2 kararı: Hesap bilgileri, Rozetler, Avatar, Görünüm, Güvenlik, Hesabı sil.
-export const sectionKeys = ["account", "badges", "avatar", "appearance", "security", "delete"] as const;
+// Sıra Tur 2 kararı: Hesap bilgileri, Rozetler, Avatar, Görünüm, Güvenlik, Sınıf, Öğretmenlik, Hesabı sil.
+export const sectionKeys = ["account", "badges", "avatar", "appearance", "security", "classroom", "teaching", "delete"] as const;
 export type SectionKey = (typeof sectionKeys)[number];

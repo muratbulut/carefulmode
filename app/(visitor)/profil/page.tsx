@@ -10,8 +10,10 @@ import { parseUserAgent } from "@/lib/account/user-agent";
 import { avatarOf } from "@/lib/avatars";
 import { db } from "@/lib/db";
 import { getMessages } from "@/lib/i18n";
+import { getClassroomSection } from "@/lib/classroom/student";
 import { getProgressSummary } from "@/lib/progress/summary";
 import { profileSectionParams, routes } from "@/lib/navigation";
+import { getTeachingSection } from "@/lib/teacher/application";
 import { getSession } from "@/lib/session";
 
 export const metadata: Metadata = { title: getMessages().pages.profile, robots: { index: false } };
@@ -30,7 +32,7 @@ async function ProfileEntry({ searchParams }: Pick<PageProps<"/profil">, "search
   const params = await searchParams;
 
   // Oturumdaki kopya yerine güncel satır: profilde yapılan değişiklik hemen görünsün.
-  const [row, rows, summary] = await Promise.all([
+  const [row, rows, summary, classroom, teaching] = await Promise.all([
     db.user.findUniqueOrThrow({
       where: { id: session.user.id },
       select: {
@@ -52,6 +54,9 @@ async function ProfileEntry({ searchParams }: Pick<PageProps<"/profil">, "search
       select: { id: true, userAgent: true, updatedAt: true },
     }),
     getProgressSummary(session.user.id),
+    getClassroomSection(session.user.id),
+    // Okulum'daki öğretmen davet bağlantısı formda okulu seçili açar (?okul=...).
+    getTeachingSection(session.user.id, typeof params.okul === "string" ? params.okul : null),
   ]);
 
   const user: ProfileUser = {
@@ -77,7 +82,7 @@ async function ProfileEntry({ searchParams }: Pick<PageProps<"/profil">, "search
     .sort((a, b) => Number(b.current) - Number(a.current));
 
   const requested = typeof params.bolum === "string" ? params.bolum : "";
-  const sectionByParam = new Map<string, SectionKey>(Object.entries(profileSectionParams).filter(([key]) => (sectionKeys as readonly string[]).includes(key)).map(([key, param]) => [param, key as SectionKey]));
+  const sectionByParam = new Map<string, SectionKey>(Object.entries(profileSectionParams).map(([key, param]) => [param, key as SectionKey]));
   const requestedSection = sectionByParam.get(requested);
   const initialSection: SectionKey = requestedSection ?? (row.deletionScheduledAt ? "delete" : sectionKeys[0]);
   const notice = params.silme === "iptal" ? getMessages().auth.signIn.deletionCancelled : null;
@@ -94,6 +99,8 @@ async function ProfileEntry({ searchParams }: Pick<PageProps<"/profil">, "search
       user={user}
       progress={progress}
       sessions={sessions}
+      classroom={classroom}
+      teaching={teaching}
       initialSection={initialSection}
       openSection={requestedSection !== undefined}
       notice={notice}

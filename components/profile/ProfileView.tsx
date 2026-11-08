@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, ChevronLeft, ChevronRight, KeyRound, Moon, Pencil, Trash2, User } from "lucide-react";
+import { Award, ChevronLeft, ChevronRight, GraduationCap, KeyRound, Moon, Pencil, School, Trash2, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Toast } from "@/components/status/Toast";
 import { avatars } from "@/lib/avatars";
@@ -11,9 +11,11 @@ import { AccountSection } from "./AccountSection";
 import { AppearanceSection } from "./AppearanceSection";
 import { AvatarSection } from "./AvatarSection";
 import { BadgesSection } from "./BadgesSection";
+import { ClassroomSection, type ClassroomSectionData } from "./ClassroomSection";
 import { DeleteSection } from "./DeleteSection";
 import { LevelBar, LevelPill, PointsPill } from "./LevelSummary";
 import { SecuritySection } from "./SecuritySection";
+import { TeachingSection, type TeachingSectionData } from "./TeachingSection";
 import { sectionKeys, type ProfileProgress, type ProfileSession, type ProfileUser, type SectionKey } from "./types";
 import { UserAvatar } from "./UserAvatar";
 
@@ -23,6 +25,8 @@ const menuIcons = {
   avatar: User,
   appearance: Moon,
   security: KeyRound,
+  classroom: School,
+  teaching: GraduationCap,
   delete: Trash2,
 } as const;
 
@@ -37,6 +41,8 @@ export function ProfileView({
   user,
   progress,
   sessions,
+  classroom,
+  teaching,
   initialSection,
   openSection = false,
   notice,
@@ -44,6 +50,8 @@ export function ProfileView({
   user: ProfileUser;
   progress: ProfileProgress;
   sessions: ProfileSession[];
+  classroom: ClassroomSectionData;
+  teaching: TeachingSectionData;
   initialSection: SectionKey;
   /** Adreste bölüm istendiyse (/profil?bolum=...) telefonda da o bölümün sayfası açık gelir. */
   openSection?: boolean;
@@ -122,6 +130,10 @@ export function ProfileView({
         return <AppearanceSection onDone={setToast} />;
       case "security":
         return <SecuritySection name={user.name} email={user.email} sessions={sessions} onDone={setToast} />;
+      case "classroom":
+        return <ClassroomSection data={classroom} emailVerified={user.emailVerified} onDone={setToast} />;
+      case "teaching":
+        return <TeachingSection data={teaching} emailVerified={user.emailVerified} onDone={setToast} />;
       case "delete":
         return <DeleteSection deletionOn={user.deletionOn} onDone={setToast} />;
     }
