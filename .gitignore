@@ -1,0 +1,47 @@
+# Bağımlılıklar
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+build/
+
+# Testler
+coverage/
+playwright-report/
+test-results/
+# Yük testinin ürettikleri (oturum çerezleri, eylem kimlikleri, özetler)
+tests/load/.data/
+
+# Ortam değişkenleri (gizli bilgiler asla depoya girmez)
+.env
+.env.*
+!.env.example
+
+# Günlükler
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editör ve sistem
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Veritabanı yedekleri
+*.dump
+*.sql.gz
+
+# Prisma'nın ürettiği istemci (prisma generate / npm install ile yeniden oluşur)
+lib/generated/
+
+# Claude Code çalışma kopyaları
+.claude/worktrees/
