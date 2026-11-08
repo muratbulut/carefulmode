@@ -1,0 +1,850 @@
+/*
+ * Görevli oda kapağının görseli (MissionCover.tsx; tuvalde "3 sade", Murat 3 Kasım). Sınıflar
+ * mc- ile başlar. Bütün hareket 14 saniyelik tek döngüdür: telefon ara ara titrer, kartlar sırayla
+ * düşer (ürün, iki mail ya da alıcı, onay kodu ya da hazırlık), en son etiket. "Hareketi azalt"
+ * açıksa (globals.css) animasyonlar durur; bu yüzden her parçanın animasyonsuz hâli son karedir
+ * (görünür), görünmez başlangıç yalnızca keyframe'lerin içindedir. Renkler temadan.
+ */
+
+.mc-root {
+  position: relative;
+  width: 440px;
+  height: 480px;
+  flex: none;
+}
+
+.mc-glow {
+  position: absolute;
+  top: 60px;
+  left: 40px;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--scene-orange) 42%, transparent), transparent 68%);
+  animation: mc-glow 5s ease-in-out infinite;
+}
+.mc-sale .mc-glow {
+  background: radial-gradient(circle, color-mix(in srgb, var(--scene-blue) 45%, transparent), transparent 68%);
+}
+.mc-orbit {
+  position: absolute;
+  top: 40px;
+  left: 20px;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  border: 1.5px dashed color-mix(in srgb, var(--fg-3) 35%, transparent);
+  animation: mc-spin 40s linear infinite;
+}
+.mc-orbit-dot {
+  position: absolute;
+  top: -5px;
+  left: 195px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.mc-orbit-dot-2 {
+  top: auto;
+  left: auto;
+  right: 22px;
+  bottom: 58px;
+  width: 7px;
+  height: 7px;
+  background: var(--scene-yellow);
+}
+
+.mc-confetti {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  animation: mc-float 6s ease-in-out infinite;
+}
+.mc-confetti-1 {
+  left: 80px;
+  top: 12px;
+  background: var(--scene-yellow);
+}
+.mc-confetti-2 {
+  left: 380px;
+  top: 440px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation-duration: 7s;
+  animation-delay: 1s;
+}
+.mc-confetti-3 {
+  left: 420px;
+  top: 270px;
+  width: 12px;
+  height: 5px;
+  background: var(--scene-violet);
+  animation-duration: 5.5s;
+  animation-delay: 2s;
+}
+.mc-confetti-4 {
+  left: 60px;
+  top: 270px;
+  border-radius: 50%;
+  background: var(--scene-orange);
+  animation-delay: 0.5s;
+}
+.mc-confetti-5 {
+  left: 250px;
+  top: 2px;
+  width: 6px;
+  height: 12px;
+  background: var(--scene-green);
+  animation-delay: 1.5s;
+}
+
+.mc-stage {
+  position: absolute;
+  inset: 0;
+  animation: mc-stage 14s infinite;
+}
+
+/* Telefon: gelen arama */
+.mc-phone {
+  position: absolute;
+  top: 20px;
+  left: 108px;
+  width: 224px;
+  height: 440px;
+  overflow: hidden;
+  border: 7px solid var(--scene-phone-edge);
+  border-radius: 38px;
+  background: radial-gradient(120% 70% at 50% 0%, var(--call-screen-3), var(--call-screen-2) 45%, var(--call-screen));
+  box-shadow: var(--shadow-card);
+  color: var(--call-text);
+  transform: rotate(-2deg);
+  animation: mc-buzz 3.5s infinite;
+}
+.mc-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 72px;
+}
+.mc-avatar {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: var(--call-avatar-bg);
+  color: var(--call-ink);
+}
+.mc-wave {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--call-muted);
+  opacity: 0;
+  animation: mc-ring 1.4s ease-out infinite;
+}
+.mc-wave-2 {
+  animation-delay: 0.5s;
+}
+.mc-caller {
+  margin-top: 16px;
+  font-size: 26px;
+  font-weight: 700;
+}
+.mc-calling {
+  font-size: 13px;
+  color: var(--call-muted);
+}
+.mc-dots span {
+  animation: mc-dot 1.2s infinite;
+}
+.mc-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.mc-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+.mc-buttons {
+  position: absolute;
+  right: 0;
+  bottom: 38px;
+  left: 0;
+  display: flex;
+  justify-content: space-around;
+}
+.mc-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.mc-round {
+  display: flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.mc-decline {
+  background: var(--call-decline);
+}
+.mc-accept {
+  background: var(--call-accept);
+  animation: mc-hop 1.2s ease-in-out infinite;
+}
+
+/* Kartlar */
+.mc-card {
+  position: absolute;
+  border-radius: 18px;
+  background: var(--scene-white);
+  box-shadow: 0 18px 40px var(--shadow-color);
+  color: var(--scene-ink);
+}
+.mc-card-1 {
+  top: 30px;
+  left: 0;
+  width: 140px;
+  padding: 11px;
+  transform: rotate(-4deg);
+  animation: mc-card-1 14s infinite;
+}
+.mc-deal {
+  display: flex;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--scene-orange-soft), var(--scene-orange-tint));
+  color: var(--scene-orange-strong);
+}
+.mc-sale .mc-deal {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--scene-blue) 12%, var(--scene-white)),
+    color-mix(in srgb, var(--scene-blue) 26%, var(--scene-white))
+  );
+  color: var(--scene-blue);
+}
+.mc-price {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+}
+.mc-track {
+  height: 6px;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--scene-line);
+}
+.mc-fill {
+  display: block;
+  width: 96%;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--scene-green);
+  transform-origin: left;
+  animation: mc-fill 14s infinite;
+}
+
+.mc-card-2 {
+  top: 120px;
+  right: 0;
+  width: 170px;
+  padding: 11px;
+  transform: rotate(3deg);
+  animation: mc-card-2 14s infinite;
+}
+.mc-ask {
+  display: flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--scene-yellow);
+  font-size: 14px;
+  font-weight: 700;
+  animation: mc-ask 1.6s ease-in-out infinite;
+}
+.mc-rows {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 9px;
+}
+.mc-typing {
+  display: none;
+}
+.mc-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--scene-paper);
+}
+.mc-sale .mc-row {
+  border-radius: 12px 12px 12px 4px;
+  background: color-mix(in srgb, var(--scene-green) 16%, var(--scene-white));
+}
+.mc-row-1 {
+  animation: mc-row-1 14s infinite;
+}
+.mc-row-2 {
+  animation: mc-row-2 14s infinite;
+}
+.mc-initial {
+  display: flex;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--scene-white);
+  font-size: 11px;
+  font-weight: 700;
+}
+.mc-tone-0 {
+  background: var(--scene-orange);
+}
+.mc-tone-1 {
+  background: var(--scene-blue);
+}
+.mc-tone-2 {
+  background: var(--scene-violet);
+}
+.mc-sale .mc-tone-0 {
+  background: var(--scene-violet);
+}
+.mc-lines {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+}
+.mc-lines span {
+  height: 6px;
+  width: 85%;
+  border-radius: 3px;
+  background: var(--scene-ink-faint);
+}
+.mc-lines span + span {
+  width: 60%;
+  background: var(--scene-line);
+}
+.mc-lens {
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  width: 40px;
+  height: 40px;
+  color: var(--scene-ink);
+  opacity: 0;
+  animation: mc-lens 14s infinite;
+}
+
+.mc-card-3 {
+  position: absolute;
+  top: 330px;
+  left: 0;
+  width: 124px;
+  transform: rotate(-2deg);
+  animation: mc-card-3 14s infinite;
+}
+.mc-sms {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 12px;
+  animation: mc-sms 14s infinite;
+}
+.mc-lock {
+  display: flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--scene-green);
+  color: var(--scene-white);
+}
+.mc-code {
+  display: flex;
+  gap: 5px;
+}
+.mc-code span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--scene-ink);
+  animation: mc-code 1.2s ease-in-out infinite;
+}
+.mc-code span:nth-child(3) {
+  margin-right: 5px;
+}
+.mc-code span:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.mc-code span:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.mc-code span:nth-child(4) {
+  animation-delay: 0.3s;
+}
+.mc-code span:nth-child(5) {
+  animation-delay: 0.4s;
+}
+.mc-code span:nth-child(6) {
+  animation-delay: 0.5s;
+}
+
+.mc-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 12px;
+  color: var(--scene-blue);
+}
+.mc-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mc-step-line {
+  height: 6px;
+  flex: 1;
+  border-radius: 3px;
+  background: var(--scene-line);
+}
+.mc-box {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border: 2px solid var(--scene-ink-faint);
+  border-radius: 5px;
+}
+.mc-tick {
+  position: absolute;
+  inset: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background: var(--scene-green);
+  color: var(--scene-white);
+}
+.mc-tick-1 {
+  animation: mc-tick-1 14s infinite;
+}
+.mc-tick-2 {
+  animation: mc-tick-2 14s infinite;
+}
+.mc-tick-3 {
+  animation: mc-tick-3 14s infinite;
+}
+
+.mc-sticker {
+  position: absolute;
+  top: 8px;
+  right: 24px;
+  transform: rotate(6deg);
+  animation: mc-sticker 14s infinite;
+}
+.mc-badge {
+  display: flex;
+  width: 64px;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--scene-yellow);
+  box-shadow: 0 12px 26px var(--shadow-color);
+  color: var(--scene-ink);
+}
+.mc-wallets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 12px 26px var(--shadow-color);
+  color: var(--scene-ink);
+}
+.mc-coin-track {
+  position: relative;
+  width: 58px;
+  height: 16px;
+}
+.mc-coin-track::before {
+  position: absolute;
+  top: 7px;
+  right: 0;
+  left: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  content: "";
+  opacity: 0.5;
+}
+.mc-coin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: var(--scene-yellow);
+  animation: mc-coin 2.4s ease-in-out infinite;
+}
+
+.mc-hop {
+  animation: mc-hop 1.6s ease-in-out infinite;
+}
+
+/* Hareket isteyen ziyaretçide: yazıyor noktaları satırlardan önce görünür. */
+@media (prefers-reduced-motion: no-preference) {
+  .mc-typing {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--scene-paper);
+    animation: mc-typing 14s infinite;
+  }
+  .mc-typing span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--scene-ink-muted);
+    animation: mc-dot 1s infinite;
+  }
+  .mc-typing span:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+  .mc-typing span:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+}
+
+@keyframes mc-stage {
+  0% {
+    opacity: 0;
+  }
+  3%,
+  95% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes mc-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+  }
+}
+@keyframes mc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes mc-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  50% {
+    transform: translateY(-14px) rotate(160deg);
+  }
+}
+@keyframes mc-buzz {
+  0%,
+  32%,
+  100% {
+    transform: rotate(-2deg) translateX(0);
+  }
+  3%,
+  9%,
+  15%,
+  21%,
+  27% {
+    transform: rotate(-3.4deg) translateX(-2px);
+  }
+  6%,
+  12%,
+  18%,
+  24%,
+  30% {
+    transform: rotate(-0.6deg) translateX(2px);
+  }
+}
+@keyframes mc-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+@keyframes mc-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+@keyframes mc-hop {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes mc-card-1 {
+  0%,
+  17% {
+    opacity: 0;
+    transform: translate(20px, 16px) scale(0.85) rotate(-4deg);
+  }
+  21% {
+    opacity: 1;
+    transform: rotate(-6deg) scale(1.04);
+  }
+  23%,
+  100% {
+    opacity: 1;
+    transform: rotate(-4deg);
+  }
+}
+@keyframes mc-card-2 {
+  0%,
+  29% {
+    opacity: 0;
+    transform: translate(-20px, 16px) scale(0.85) rotate(3deg);
+  }
+  33% {
+    opacity: 1;
+    transform: rotate(5deg) scale(1.04);
+  }
+  35%,
+  100% {
+    opacity: 1;
+    transform: rotate(3deg);
+  }
+}
+@keyframes mc-card-3 {
+  0%,
+  51% {
+    opacity: 0;
+    transform: translate(20px, -10px) scale(0.85) rotate(-2deg);
+  }
+  55% {
+    opacity: 1;
+    transform: rotate(-4deg) scale(1.04);
+  }
+  57%,
+  100% {
+    opacity: 1;
+    transform: rotate(-2deg);
+  }
+}
+@keyframes mc-sticker {
+  0%,
+  69% {
+    opacity: 0;
+    transform: scale(0.5) rotate(8deg);
+  }
+  73% {
+    opacity: 1;
+    transform: scale(1.12) rotate(4deg);
+  }
+  75%,
+  100% {
+    opacity: 1;
+    transform: rotate(6deg);
+  }
+}
+@keyframes mc-fill {
+  0%,
+  21% {
+    transform: scaleX(0);
+  }
+  27%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+@keyframes mc-ask {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+@keyframes mc-typing {
+  0%,
+  33% {
+    opacity: 1;
+  }
+  36%,
+  100% {
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    margin-bottom: -7px;
+  }
+}
+@keyframes mc-row-1 {
+  0%,
+  35% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  38%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mc-row-2 {
+  0%,
+  42% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  45%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mc-lens {
+  0%,
+  46% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  49% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  56% {
+    transform: translate(100px, 0);
+  }
+  60% {
+    transform: translate(100px, 42px);
+  }
+  66% {
+    opacity: 1;
+    transform: translate(0, 42px);
+  }
+  69%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 42px);
+  }
+}
+@keyframes mc-sms {
+  0%,
+  58% {
+    transform: none;
+  }
+  59%,
+  61%,
+  63% {
+    transform: translateX(-2px) rotate(-2deg);
+  }
+  60%,
+  62%,
+  64% {
+    transform: translateX(2px) rotate(2deg);
+  }
+  65%,
+  100% {
+    transform: none;
+  }
+}
+@keyframes mc-code {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes mc-tick-1 {
+  0%,
+  58% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  61%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mc-tick-2 {
+  0%,
+  63% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  66%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mc-tick-3 {
+  0%,
+  68% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  71%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mc-coin {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(42px);
+  }
+}
