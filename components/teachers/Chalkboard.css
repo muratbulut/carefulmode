@@ -1,0 +1,217 @@
+/*
+ * Öğretmenler için kahramanındaki tahta (4 Kasım, 16 B; tuvalde Kahraman-B). Tahtanın içi 552×380
+ * birimlik bir sahnedir: --u bir birimdir (kabın genişliğine göre ölçeklenir), böylece telefonda da
+ * aynı yerleşim küçülerek durur. Sınıflar "cb-" ile başlar. Renkler globals.css'teki --board-*.
+ */
+
+.cb-board {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  padding: 14px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--board-frame), var(--board-frame-mid) 60%, var(--board-frame-deep));
+  box-shadow:
+    inset 0 2px 0 var(--board-shine),
+    inset 0 -2px 0 var(--board-shadow),
+    0 24px 54px var(--board-shadow);
+}
+
+@media (width < 40rem) {
+  .cb-board {
+    padding: 10px;
+    border-radius: 14px;
+  }
+}
+
+.cb-surface {
+  container-type: inline-size;
+  position: relative;
+  aspect-ratio: 552 / 380;
+  overflow: hidden;
+  border-radius: 8px;
+  user-select: none;
+  background:
+    radial-gradient(45% 30% at 72% 62%, var(--board-glow), transparent 70%),
+    radial-gradient(35% 25% at 22% 30%, var(--board-glow), transparent 70%),
+    radial-gradient(60% 20% at 50% 92%, var(--board-glow), transparent 70%),
+    radial-gradient(120% 90% at 30% 20%, var(--board-green), var(--board-green-mid) 60%, var(--board-green-deep));
+  box-shadow: inset 0 0 44px var(--board-shadow);
+}
+
+.cb-surface[data-chalk="hand"] {
+  cursor: none;
+}
+
+.cb-writing {
+  --u: calc(100cqw / 552);
+  position: absolute;
+  inset: 0;
+  filter: url(#cb-chalk);
+}
+
+.cb-line {
+  --u: calc(100cqw / 552);
+  position: absolute;
+  right: 0;
+  left: 0;
+  font-family: "Caveat Variable", "Caveat", "Comic Sans MS", cursive;
+  font-size: calc(64 * var(--u));
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--board-chalk);
+  text-align: center;
+  white-space: nowrap;
+  text-shadow:
+    0 0 1px var(--board-chalk),
+    0 0 6px color-mix(in srgb, var(--board-chalk) 18%, transparent);
+}
+
+.cb-line[data-line="1"] {
+  top: calc(96 * var(--u));
+  color: var(--board-chalk-yellow);
+}
+
+.cb-line[data-line="2"] {
+  top: calc(176 * var(--u));
+}
+
+.cb-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cb-underline {
+  stroke: var(--board-chalk-green);
+}
+
+.cb-strokes {
+  stroke: var(--board-chalk);
+}
+
+/* Tebeşir çubuğu: ucu (sol uç) yazının ya da imlecin olduğu noktada durur. */
+.cb-pin {
+  --u: calc(100cqw / 552);
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.cb-pin-inline {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  height: 1em;
+}
+
+.cb-stick {
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: max(26px, calc(46 * var(--u, 1px)));
+  height: max(7px, calc(11 * var(--u, 1px)));
+  border-radius: 2px 6px 6px 2px;
+  background: linear-gradient(var(--board-stick), var(--board-stick-mid) 55%, var(--board-stick-deep));
+  box-shadow: 0 3px 6px var(--board-shadow);
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+
+.cb-pin-inline .cb-stick {
+  bottom: 2px;
+}
+
+.cb-stick::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 0;
+  width: 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--board-stick) 70%, transparent);
+}
+
+.cb-eraser {
+  --u: calc(100cqw / 552);
+  position: absolute;
+  width: calc(96 * var(--u));
+  height: calc(38 * var(--u));
+  overflow: hidden;
+  border-radius: 6px;
+  background: linear-gradient(var(--board-eraser-wood) 0 52%, var(--board-eraser-felt) 52%);
+  box-shadow: 0 8px 16px var(--board-shadow);
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+
+/* Tahtanın altındaki raf: tebeşir (yazmıyorken), tahta kalemi, sarı tebeşir, silgi (silmiyorken). */
+.cb-ledge {
+  position: absolute;
+  right: 12%;
+  bottom: -2px;
+  left: 12%;
+  height: 12px;
+  border-radius: 0 0 6px 6px;
+  background: var(--board-ledge);
+  box-shadow: 0 4px 8px var(--board-shadow);
+}
+
+.cb-ledge > span {
+  position: absolute;
+  bottom: 9px;
+}
+
+.cb-tray-chalk {
+  left: 8%;
+  width: 38px;
+  height: 9px;
+  border-radius: 3px 5px 5px 3px;
+  background: linear-gradient(var(--board-stick), var(--board-stick-deep));
+}
+
+.cb-tray-yellow {
+  left: 21%;
+  width: 24px;
+  height: 9px;
+  border-radius: 4px;
+  background: var(--board-marker);
+}
+
+.cb-tray-pen {
+  left: 40%;
+  width: 64px;
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--board-pen-cap) 0 22%, var(--board-pen) 22%);
+}
+
+.cb-tray-eraser {
+  right: 14%;
+  width: 58px;
+  height: 18px;
+  border-radius: 4px;
+  background: linear-gradient(var(--board-eraser-wood) 0 52%, var(--board-eraser-felt) 52%);
+}
+
+@media (width < 40rem) {
+  .cb-tray-chalk {
+    width: 26px;
+    height: 7px;
+  }
+  .cb-tray-yellow {
+    width: 16px;
+    height: 7px;
+  }
+  .cb-tray-pen {
+    width: 42px;
+    height: 8px;
+  }
+  .cb-tray-eraser {
+    width: 40px;
+    height: 13px;
+  }
+}
