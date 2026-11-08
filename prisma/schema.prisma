@@ -1,0 +1,649 @@
+// Careful Mode veri modeli. Kaynak: docs/platform-document.md, Bölüm 6.
+// Model ve alan adları İngilizcedir; dokümandaki Türkçe karşılıkları docs/glossary.md
+// içinde. Better Auth tabloları (Session, Account, Verification) kütüphanenin standart
+// biçimindedir.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../lib/generated/prisma"
+  importFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Sabit listeler
+// ---------------------------------------------------------------------------
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+  // Silinmek isteyen ama kalıcı kayıtlarda izi olan hesap anonimleştirilir (lib/cleanup.ts):
+  // giremez, hiçbir listede görünmez; kayıt defteri, haber ve ipucu ona bağlı kalır.
+  DELETED
+}
+
+enum Theme {
+  DARK
+  GRAY
+}
+
+// Kayıt formundaki "Eğitim durumu"; boş bırakılırsa (Belirtmeyeyim) null.
+enum EducationStatus {
+  STUDYING
+  GRADUATED
+}
+
+// Yönetim ekibi izinleri (talepler, lab düzenleme, lab yayını, ipucu, gündem,
+// kayıt defteri, roller).
+enum TeamPermissionType {
+  APPLICATIONS
+  LAB_EDITING
+  LAB_PUBLISHING
+  TIPS
+  NEWS
+  AUDIT_LOG
+  ROLES
+}
+
+// Öğretmen talebinin durumu.
+enum ApplicationStatus {
+  PENDING
+  INFO_REQUESTED
+  APPROVED
+  REJECTED
+}
+
+// Okul sorumlusunun talep hakkındaki görüşü: onayladı / tanımıyor.
+enum CoordinatorOpinion {
+  ENDORSED
+  NOT_RECOGNIZED
+}
+
+// Eğitim labı ya da senaryo labı.
+enum LabType {
+  TRAINING
+  SCENARIO
+}
+
+// Sahne türleri. Kodda lib/lab/templates/ altında karşılığı olmalı;
+// yeni şablon yeni bir değer ve migration gerektirir.
+enum SceneTemplate {
+  TRAINING
+  INBOX
+  MESSAGING
+}
+
+enum LabStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+// Lab denemesinin durumu: sürüyor, tamamlandı, ele geçirildi ("hacklendin"), yarıda bırakıldı.
+enum AttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  HACKED
+  ABANDONED
+}
+
+// Günün ipucunun durumu: havuzda (sırası gelince gösterilir), taslak (öğrenciye gitmez), arşivde.
+enum TipStatus {
+  POOL
+  DRAFT
+  ARCHIVED
+}
+
+enum ArticleStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+}
+
+// ---------------------------------------------------------------------------
+// Kullanıcı ve kimlik doğrulama
+// ---------------------------------------------------------------------------
+
+// Better Auth eşlemesi (Faz 2): name -> displayName, image -> avatar.
+model User {
+  id                  String           @id @default(cuid())
+  displayName         String
+  email               String           @unique
+  emailVerified       Boolean          @default(false)
+  role                Role             @default(STUDENT)
+  birthYear           Int?             @db.SmallInt
+  educationStatus     EducationStatus?
+  // Serbest metin: "7. sınıf", "Lise", "Lisans · Bilgisayar Mühendisliği" gibi.
+  gradeLevel          String?
+  // Öğretmenin okulu.
+  schoolId            String?
+  avatar              String?
+  theme               Theme            @default(DARK)
+  kvkkConsentAt       DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  lastActiveAt        DateTime?
+  suspended           Boolean          @default(false)
+  // "Hesabı sil" denince 7 gün sonrası yazılır; bu sürede giriş yapılırsa silme iptal olur.
+  deletionScheduledAt DateTime?
+
+  school School? @relation("TeacherSchool", fields: [schoolId], references: [id], onDelete: Restrict)
+
+  sessions Session[]
+  accounts Account[]
+
+  teamPermissions    TeamPermission[] @relation("PermissionHolder")
+  grantedPermissions TeamPermission[] @relation("PermissionGranter")
+
+  coordinatedSchool School?  @relation("SchoolCoordinator")
+  addedSchools      School[] @relation("SchoolCreator")
+
+  teacherApplications TeacherApplication[] @relation("ApplicationOwner")
+  decidedApplications TeacherApplication[] @relation("ApplicationDecider")
+
+  classrooms           Classroom[]
+  classroomMemberships ClassroomMembership[]
+  trainingProgress     TrainingProgress[]
+  labAttempts          LabAttempt[]
+  earnedBadges         EarnedBadge[]
+  tipViews             TipView[]
+
+  updatedLabs          Lab[]         @relation("LabUpdater")
+  publishedLabVersions LabVersion[]  @relation("LabPublisher")
+  authoredTips         DailyTip[]    @relation("TipAuthor")
+  authoredArticles     NewsArticle[] @relation("ArticleAuthor")
+  auditLogEntries      AuditLog[]    @relation("AuditActor")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+// İstek sınırı sayaçları (giriş, kayıt, kod gönderme; lib/rate-limit.ts). Anahtar
+// "kural:kimlik" biçimindedir, pencere sabittir: süre dolunca sayaç sıfırdan başlar.
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}
+
+// ---------------------------------------------------------------------------
+// Yönetim ekibi, okullar, öğretmen talepleri
+// ---------------------------------------------------------------------------
+
+model TeamPermission {
+  userId      String
+  permission  TeamPermissionType
+  grantedById String
+  grantedAt   DateTime           @default(now())
+
+  user      User @relation("PermissionHolder", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy User @relation("PermissionGranter", fields: [grantedById], references: [id], onDelete: Restrict)
+
+  @@id([userId, permission])
+}
+
+// Okul listesi. İl ve ilçe lib/school/places.ts listesindeki adlardır. nameKey adın
+// karşılaştırma biçimidir (küçük harf, tek boşluk; lib/school/names.ts): "Atatürk Ortaokulu" ile
+// "atatürk  ortaokulu" aynı ilçede iki ayrı okul olamaz.
+model School {
+  id                  String   @id @default(cuid())
+  name                String
+  nameKey             String
+  province            String
+  district            String
+  // Okul sorumlusu: okulu tanıyan öğretmen ya da yönetimden biri; öğrenci olamaz. Bir kişi en
+  // fazla bir okulun sorumlusudur.
+  coordinatorId       String?  @unique
+  // Sorumlu, okulundan gelen öğretmen taleplerini kendisi onaylayabilir mi (okul bazında tik).
+  coordinatorApproves Boolean  @default(true)
+  createdById         String
+  createdAt           DateTime @default(now())
+
+  coordinator User? @relation("SchoolCoordinator", fields: [coordinatorId], references: [id], onDelete: SetNull)
+  createdBy   User  @relation("SchoolCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  teachers     User[]               @relation("TeacherSchool")
+  applications TeacherApplication[]
+
+  @@unique([province, district, nameKey])
+}
+
+// Öğretmenlik talebi. Kişinin en fazla bir açık talebi olur (PENDING ya da INFO_REQUESTED);
+// kural lib/teacher/application-actions.ts içinde işlemle korunur. Okul listede yoksa schoolId
+// boştur, newSchoolName yazılır ("Yeni okul" etiketi).
+model TeacherApplication {
+  id                 String              @id @default(cuid())
+  userId             String
+  schoolId           String?
+  newSchoolName      String?
+  province           String
+  district           String
+  subject            String
+  institutionalEmail String?
+  // Eklenen belgenin adı ve boyutu. Dosyanın kendisi ApplicationDocument'tadır ve karar
+  // verilince silinir; ad kalır ("gönderdiğin belge silindi").
+  documentName       String?
+  documentSize       Int?
+  note               String?
+  status             ApplicationStatus   @default(PENDING)
+  // Yöneticinin işaretlediği kontrol listesi (en az 2 işaret olmadan onay yok).
+  checks             Json                @default("{}")
+  question           String?
+  questionAt         DateTime?
+  answer             String?
+  answeredAt         DateTime?
+  coordinatorOpinion CoordinatorOpinion?
+  decidedById        String?
+  decidedAt          DateTime?
+  rejectionNote      String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @default(now()) @updatedAt
+
+  user      User                 @relation("ApplicationOwner", fields: [userId], references: [id], onDelete: Cascade)
+  school    School?              @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  decidedBy User?                @relation("ApplicationDecider", fields: [decidedById], references: [id], onDelete: Restrict)
+  document  ApplicationDocument?
+
+  @@index([userId])
+  @@index([status])
+  @@index([schoolId])
+}
+
+// Talebe eklenen belge (PDF, JPG, PNG; en fazla 5 MB). Herkese açık bir klasörde değil,
+// veritabanında durur; yalnızca talepleri inceleyen kişi görür ve karar verilince silinir
+// (doküman Bölüm 8). Görseller tarayıcıda yeniden çizilip gönderilir, konum gibi gizli bilgiler gitmez.
+model ApplicationDocument {
+  applicationId String   @id
+  mimeType      String
+  data          Bytes
+  createdAt     DateTime @default(now())
+
+  application TeacherApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Sınıflar ve ödevler
+// ---------------------------------------------------------------------------
+
+model Classroom {
+  id        String   @id @default(cuid())
+  name      String
+  // Düzey: "7. sınıf", "Karma" gibi (lib/classroom/rules.ts classLevels).
+  level     String   @default("")
+  teacherId String
+  joinCode  String   @unique @db.Char(6)
+  // Öğretmenlikten çıkarılınca sınıflar öğrencilerden gizlenir; ilerleme silinmez.
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  teacher     User                  @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  members     ClassroomMembership[]
+  assignments Assignment[]
+
+  @@index([teacherId])
+}
+
+model ClassroomMembership {
+  classroomId String
+  userId      String
+  joinedAt    DateTime @default(now())
+
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([classroomId, userId])
+  @@index([userId])
+}
+
+// Bir sınıfta aynı anda tek açık ödev kuralı uygulama kodunda (işlem içinde) korunur.
+// labIds: öğretmenin mahalleden seçtiği odalar (açan eğitimler kendiliğinden eklenir); boşsa
+// mahallenin yayındaki bütün odaları (oda seçimi gelmeden önce verilen ödevler). Hesap tek yerde:
+// lib/classroom/homework.ts.
+model Assignment {
+  id             String    @id @default(cuid())
+  classroomId    String
+  neighborhoodId String
+  labIds         String[]  @default([])
+  dueDate        DateTime?
+  createdAt      DateTime  @default(now())
+  closed         Boolean   @default(false)
+
+  classroom    Classroom    @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  neighborhood Neighborhood @relation(fields: [neighborhoodId], references: [id], onDelete: Restrict)
+
+  @@index([classroomId, closed])
+}
+
+// ---------------------------------------------------------------------------
+// Mahalleler ve lablar
+// ---------------------------------------------------------------------------
+
+model Neighborhood {
+  id        String @id @default(cuid())
+  slug      String @unique
+  name      String
+  // Mahallenin konusu: "Oltalama", "Hesap güvenliği" gibi.
+  topic     String @default("")
+  // Tema rengi adı (app/globals.css): success, accent, purple, warning, pink. Sabit renk kodu değil.
+  color     String
+  // İkon adı (components/roadmap/NeighborhoodIcon.tsx): castle, mail, download, card, heart.
+  icon      String @default("mail")
+  sortOrder Int
+
+  labs         Lab[]
+  assignments  Assignment[]
+  tips         DailyTip[]
+  newsArticles NewsArticle[]
+}
+
+// Labın adı, hikâyesi, sahnesi, görevleri ve rapor metinleri içeriktedir (draftContent, yayınlanınca
+// LabVersion.content); biçimi lib/lab/content.ts. Bir mahallede birden çok eğitim labı olabilir:
+// sırası en küçük olan temel eğitimdir (her zaman açık), diğerleri ileri eğitimdir (temel bitince
+// açılır). Senaryo labını unlockedById'deki eğitim açar; boşsa mahallenin temel eğitimi. Kural tek
+// yerde: lib/lab/gates.ts. Ayrıntı: docs/guides/new-lab.md, "Eğitimler ve kilitler".
+model Lab {
+  id               String        @id @default(cuid())
+  slug             String        @unique
+  neighborhoodId   String
+  type             LabType
+  template         SceneTemplate
+  sortOrder        Int
+  status           LabStatus     @default(DRAFT)
+  difficulty       Difficulty
+  durationMin      Int           @db.SmallInt
+  draftContent     Json          @default("{}")
+  // Taslağın sürümü: taslak her yazıldığında bir artar. Kaydetme ve yayınlama "taslak hâlâ bu
+  // sürümde mi" koşuluyla yazar; aynı anda düzenleyen iki kişiden sonra gelen üstüne yazmaz.
+  draftRevision    Int           @default(0)
+  // Hiç yayınlanmadıysa null.
+  publishedVersion Int?
+  // Senaryo labını açan eğitim labı (aynı mahallede); null ise mahallenin temel eğitimi. Eğitim
+  // labında hep null. Yayından bağımsızdır: değişince hemen geçerli olur (sıra gibi).
+  unlockedById     String?
+  // Oda depodaki dosyadan geliyorsa (labs/rooms/) dosyanın parmak izi (sha256); formla açılan
+  // odada null. Başlangıç verisi dosya değişince odayı günceller (prisma/rooms.ts).
+  sourceHash       String?
+  updatedById      String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  neighborhood Neighborhood @relation(fields: [neighborhoodId], references: [id], onDelete: Restrict)
+  unlockedBy   Lab?         @relation("LabGate", fields: [unlockedById], references: [id], onDelete: SetNull)
+  updatedBy    User?        @relation("LabUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  unlocks          Lab[]              @relation("LabGate")
+
+  versions         LabVersion[]
+  trainingProgress TrainingProgress[]
+  attempts         LabAttempt[]
+  newsArticles     NewsArticle[]
+  tips             DailyTip[]
+}
+
+// "Yayınla" denince taslak buraya kopyalanır; kayıtlar değişmez. Öğrenci denemesi başladığı
+// sürümle biter. Örnek lablar (labs/examples/) yayınlayansız gelir.
+model LabVersion {
+  labId         String
+  version       Int
+  content       Json
+  publishedById String?
+  publishedAt   DateTime @default(now())
+
+  lab         Lab   @relation(fields: [labId], references: [id], onDelete: Restrict)
+  publishedBy User? @relation("LabPublisher", fields: [publishedById], references: [id], onDelete: SetNull)
+
+  attempts LabAttempt[]
+
+  @@id([labId, version])
+}
+
+// Eğitim labında kalınan kart; bitince completedAt yazılır (tekrar bakmak onu silmez).
+// answeredCards: cevaplanan soru kartlarının (mini test, video sorusu) kimlikleri. Eğitim ancak
+// yayındaki sürümün bütün soruları cevaplanınca biter; bitişi yalnızca tarayıcının sözüne bırakmaz.
+model TrainingProgress {
+  userId        String
+  labId         String
+  cardIndex     Int       @default(0)
+  answeredCards String[]  @default([])
+  completedAt   DateTime?
+  updatedAt     DateTime  @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lab  Lab  @relation(fields: [labId], references: [id], onDelete: Restrict)
+
+  @@id([userId, labId])
+}
+
+model LabAttempt {
+  id           String        @id @default(cuid())
+  userId       String
+  labId        String
+  labVersion   Int
+  status       AttemptStatus @default(IN_PROGRESS)
+  // 0-10; deneme bitene kadar null.
+  reportScore  Int?          @db.SmallInt
+  startedAt    DateTime      @default(now())
+  endedAt      DateTime?
+  resultReport Json?
+
+  user          User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  lab           Lab        @relation(fields: [labId], references: [id], onDelete: Restrict)
+  versionRecord LabVersion @relation(fields: [labId, labVersion], references: [labId, version], onDelete: Restrict)
+
+  events LabEvent[]
+
+  @@index([userId, labId])
+  @@index([labId, status])
+}
+
+// Öğrencinin labdaki eylemleri (mail açtı, bildirdi, cevap verdi...). Tarayıcı olayları toplu
+// gönderir; seq tarayıcıdaki sıradır, aynı olay iki kez gelirse ikincisi yazılmaz. Sahte
+// formlara yazılan metin buraya hiç gelmez, yalnızca "bilgi girildi" olayı gelir.
+model LabEvent {
+  id        String   @id @default(cuid())
+  attemptId String
+  seq       Int
+  type      String
+  data      Json?
+  createdAt DateTime @default(now())
+
+  attempt LabAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, seq])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Rozetler, günün ipucu, gündem
+// ---------------------------------------------------------------------------
+
+// Rozet tanımları kodda; ikonlar public/badges/<code>.svg.
+model EarnedBadge {
+  userId        String
+  badgeCode     String
+  earnedAt      DateTime @default(now())
+  // Vitrinde en fazla 5 rozet; vitrinde değilse null.
+  showcaseOrder Int?     @db.SmallInt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, badgeCode])
+}
+
+// Günün ipucu (Tur 4, Ipucu-C3-Bugun). Havuzdaki ipuçları sırayla döner: en uzun süredir
+// gösterilmeyen önce çıkar. Bir ipucu belirli bir güne sabitlenebilir (o gün tek ipucu).
+model DailyTip {
+  id             String    @id @default(cuid())
+  // 20-140 karakter.
+  text           String
+  // "Neden?" açıklaması, en az 20 karakter.
+  reason         String
+  neighborhoodId String?
+  // İlgili lab (isteğe bağlı).
+  labId          String?
+  status         TipStatus @default(DRAFT)
+  // Sabitlenen gün; null ise sırası gelince gösterilir.
+  pinnedDate     DateTime? @unique @db.Date
+  authorId       String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
+
+  neighborhood Neighborhood? @relation(fields: [neighborhoodId], references: [id], onDelete: SetNull)
+  lab          Lab?          @relation(fields: [labId], references: [id], onDelete: SetNull)
+  author       User          @relation("TipAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  views TipView[]
+  days  TipDay[]
+
+  @@index([status])
+}
+
+// Hangi gün hangi ipucu gösterildi. Günün ilk isteğinde yazılır; bugünün ipucu artık değişmez.
+model TipDay {
+  date  DateTime @id @db.Date
+  tipId String
+
+  tip DailyTip @relation(fields: [tipId], references: [id], onDelete: Restrict)
+
+  @@index([tipId, date])
+}
+
+// Kullanıcı başına günde bir kayıt.
+model TipView {
+  userId       String
+  tipId        String
+  date         DateTime @default(now()) @db.Date
+  reasonViewed Boolean  @default(false)
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tip  DailyTip @relation(fields: [tipId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tipId, date])
+  @@index([tipId, date])
+}
+
+// Gündem haberi (Tur 2 H2, Tur 4 Gundem-Son). Ekip yazar, haftada bir Cuma 08.00'de yayınlanır.
+// Taslak eksik olabilir (alanlar boş kalır); planlamadan önce "Yayına hazır mı?" listesi geçmelidir.
+// Planlanan haber publishedAt geçince yayında sayılır (ayrı bir iş gerekmez).
+model NewsArticle {
+  id             String        @id @default(cuid())
+  slug           String        @unique
+  // En fazla 70 karakter.
+  title          String        @default("")
+  // En fazla 180 karakter.
+  summary        String        @default("")
+  // Haberin gövdesi: Ne oluyor?, örnek mesaj, Nasıl anlarsın? işaretleri, Ne yapmalısın?, Kısaca
+  // (şema lib/news/content.ts).
+  content        Json
+  sourceName     String        @default("")
+  sourceUrl      String        @default("")
+  neighborhoodId String?
+  relatedLabId   String?
+  status         ArticleStatus @default(DRAFT)
+  // Taslakta null; planlanan haberde yayın anı (Cuma 08.00, Türkiye saati).
+  publishedAt    DateTime?
+  readCount      Int           @default(0)
+  // Kapak görseli (4 Kasım, 15): görselin kendisi NewsCover'da. Odak noktası yüzde (0-100):
+  // liste karesi, haber kapağı ve telefon kırpımları bu noktayı ortalar. Alt metin ekran okuyucu
+  // için, kaynak kapağın köşesinde küçük yazılır.
+  coverFocusX    Int           @default(50)
+  coverFocusY    Int           @default(50)
+  coverAlt       String        @default("")
+  coverCredit    String        @default("")
+  authorId       String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now()) @updatedAt
+
+  neighborhood Neighborhood? @relation(fields: [neighborhoodId], references: [id], onDelete: Restrict)
+  relatedLab   Lab?          @relation(fields: [relatedLabId], references: [id], onDelete: SetNull)
+  author       User          @relation("ArticleAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  cover        NewsCover?
+
+  @@index([status, publishedAt])
+}
+
+// Haberin kapak görseli. Herkese açık bir klasörde değil, veritabanında durur; yayındaki haberin
+// kapağı /api/kapak/<haber> adresinden verilir. Görsel tarayıcıda yeniden çizilir (en çok 1600 px
+// genişlik, WebP; konum ve cihaz bilgisi gitmez), sunucu türünü baytlarından denetler
+// (lib/news/cover.ts). Taslak silinince kapağı da silinir (silmeyi geri al kapağı geri getirmez).
+model NewsCover {
+  articleId String   @id
+  mimeType  String
+  data      Bytes
+  width     Int
+  height    Int
+  updatedAt DateTime @default(now()) @updatedAt
+
+  article NewsArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Kayıt defteri: silinmez, düzenlenmez (migration'daki tetikleyici de engeller).
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String
+  action    String
+  target    String
+  details   Json?
+  createdAt DateTime @default(now())
+
+  actor User @relation("AuditActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([createdAt])
+  @@index([actorId])
+}
