@@ -1,0 +1,8 @@
+# Paylaşılan sunucuya özel ayarlar; docker-compose.yml'nin üstüne eklenir
+# (docker/server/deploy.sh). HTTPS'i sunucunun nginx'i yapar, Caddy çalışmaz.
+# Uygulama yalnızca sunucunun kendisinden (127.0.0.1) erişilir; nginx buraya iletir.
+
+services:
+  app:
+    ports:
+      - "127.0.0.1:${APP_PORT:-3002}:3000"

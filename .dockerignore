@@ -1,0 +1,36 @@
+# Derleme bağlamına girmeyecekler (imaj küçük kalsın, gizli bilgi sızmasın)
+.git
+.github
+node_modules
+.next
+out
+build
+lib/generated
+coverage
+playwright-report
+test-results
+tests
+# Test ayarları testlere bağlı (tests/ imaja girmez); derlemedeki tip denetimi onları görmesin.
+playwright.config.ts
+vitest.config.mts
+docs
+*.md
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+
+# Ortam değişkenleri asla imaja girmez
+.env
+.env.*
+
+# Docker ve yayın dosyaları
+docker-compose*.yml
+docker/Caddyfile
+
+# Editör ve sistem
+.DS_Store
+.vscode
+.idea
+
+# Sunucu betikleri
+docker/server

@@ -1,0 +1,17 @@
+# Careful Mode ters vekil sunucusu (kendi başına bir sunucuda). Caddy, DOMAIN için HTTPS
+# sertifikasını kendisi alır; DOMAIN verilmezse localhost üzerinde kendi imzaladığı
+# sertifikayla çalışır. Diğer güvenlik başlıkları uygulamadan gelir (next.config.ts).
+
+{$DOMAIN:localhost} {
+	encode zstd gzip
+
+	header {
+		# includeSubDomains yalnızca alan adının alt adları bilinirse eklenir. Sunucudaki nginx onu
+		# ekler (bitirme.muratbulut.net'in alt adı yok; güvenlik turu 5); burada DOMAIN herhangi bir
+		# ad olabileceği için eklenmez.
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+
+	reverse_proxy app:3000
+}

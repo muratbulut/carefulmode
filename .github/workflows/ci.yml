@@ -1,0 +1,325 @@
+# Her PR'da ve main'e her girişte: lint, tip kontrolü, birim testleri; taslak olmayan PR'da
+# uçtan uca testler; Docker imajının derlenmesi ve yığın denemesi. main'de hepsi geçince site sunucuya yüklenir (deploy.yml).
+#
+# Hafif CI (29 Ekim, Murat; Actions dakikası): yalnızca oda dosyaları ve belgeler (labs/rooms/,
+# docs/) değiştiyse uçtan uca testler çalışmaz; PR'da Docker işi de çalışmaz. Oda dosyasını birim
+# testleri denetler (tests/unit/room-files.test.ts); main'de Docker işi yığını odanın gerçek
+# başlangıç verisiyle kurar, geçmezse yayın olmaz. Başka bir dosya değiştiyse ya da fark
+# bulunamazsa her şey çalışır.
+#
+# Dakika önlemleri (2 Kasım, Murat): uçtan uca testler ve PR'daki Docker işi yalnızca taslak
+# (draft) olmayan PR'da çalışır; PR taslak açılır, ara push'larda yalnızca lint, tip ve birim
+# testleri koşar, "Ready for review" denince tam CI bir kez koşar (GitHub taslak PR'ı zaten
+# birleştirtmez). main'de uçtan uca testler çalışmaz: aynı birleşmiş kod PR'da geçmiştir; main'de
+# Docker işi ve yayındaki canlı uçtan uca testler (deploy.yml) güvenlik ağıdır. İki PR arka arkaya
+# birleşecekse ikincisi önce "Update branch" ile güncellenir, PR testi ikisini birlikte dener.
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# PR'larda yeni push eskisini durdurur; main'de (yayın dahil) iş yarıda kesilmez.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  CHECKPOINT_DISABLE: "1"
+
+jobs:
+  checks:
+    name: Lint, tip ve birim testleri
+    # Makine sürümü sabit: ubuntu-latest 19 Ekim 2026'da Ubuntu 26'ya geçiyor; geçiş ayrı bir PR'da
+    # denenmeden (Playwright bağımlılıkları, shellcheck, Docker) bütün işler 24.04'te kalır.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      # Bu işte veritabanı yok; adres yalnızca Prisma komutları sorun çıkarmasın diye.
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+    outputs:
+      full: ${{ steps.scope.outputs.full }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      # PR'da HEAD birleştirme denemesidir, ilk ebeveyni hedef dal; main'de girişten önceki uç.
+      - name: Değişiklik kapsamı (tam ya da hafif)
+        id: scope
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: bash .github/scripts/ci-scope.sh
+      - name: Sunucu betikleri (shellcheck)
+        run: |
+          command -v shellcheck > /dev/null || sudo apt-get install -y shellcheck
+          shellcheck -x docker/server/*.sh tests/deploy/*.sh .github/scripts/*.sh
+      # Yedek saklama kuralları (Docker gerekmez): yanlış dosya silinmez, 7 günden eski yedek kalmaz.
+      - name: Yedek saklama denemesi
+        run: bash tests/deploy/backup-retention.sh
+      # nginx girişi (Docker gerekmez): yalnızca Cloudflare'den gelen bağlantı girer, ziyaretçi
+      # adresi CF-Connecting-IP'den alınır, bozuk aralık listesiyle site dosyası üretilmez.
+      - name: nginx girişi denemesi
+        run: |
+          command -v nginx > /dev/null || { sudo apt-get update -q && sudo apt-get install -y nginx-light; }
+          bash tests/deploy/nginx-site.sh
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+  e2e:
+    # Masaüstü ve telefon ayrı işlerde, aynı anda: bütün testler tek işte 30 dakikayı aşıyordu.
+    name: Uçtan uca testler (${{ matrix.project }})
+    needs: checks
+    # Yalnızca taslak olmayan PR'da (main'de çalışmaz; yukarıdaki dakika önlemleri).
+    if: >-
+      needs.checks.outputs.full == 'true' && github.event_name == 'pull_request' &&
+      !github.event.pull_request.draft
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [desktop, mobile]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: cyberguard
+          POSTGRES_PASSWORD: cyberguard_ci
+          POSTGRES_DB: cyberguard
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cyberguard -d cyberguard"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://cyberguard:cyberguard_ci@localhost:5432/cyberguard?schema=public
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Veritabanı migration
+        run: npx prisma migrate deploy
+      - name: Başlangıç verisi
+        run: npm run db:seed
+      - name: Playwright tarayıcısı
+        run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npm run test:e2e -- --project=${{ matrix.project }}
+      - name: Playwright raporu
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-${{ matrix.project }}
+          path: playwright-report/
+          retention-days: 7
+
+  docker:
+    name: Docker imajı ve yığın
+    needs: checks
+    # main'de her zaman (yayından önce yığın odanın başlangıç verisiyle kurulur); PR'da yalnızca
+    # tam CI'da ve taslak olmayan PR'da.
+    if: >-
+      github.event_name == 'push' ||
+      (needs.checks.outputs.full == 'true' && !github.event.pull_request.draft)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Uygulama imajı (runner)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/Dockerfile
+          target: runner
+          load: true
+          tags: cyberguard-app:ci
+          cache-from: type=gha,scope=app
+          cache-to: type=gha,mode=max,scope=app
+      - name: Migration imajı (migrate)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/Dockerfile
+          target: migrate
+          load: true
+          tags: cyberguard-migrate:ci
+          cache-from: |
+            type=gha,scope=migrate
+            type=gha,scope=app
+          cache-to: type=gha,mode=max,scope=migrate
+      # Sunucudaki gibi (deploy.yml): yedek klasörü yayın kullanıcısının, yalnızca ona açık.
+      - name: Yedek klasörü
+        run: sudo install -d -o "$(id -un)" -g "$(id -gn)" -m 700 /opt/backups/cyberguard
+      # Sunucudaki yayın betiğinin aynısı: .env üretir, yığını başlatır, sağlığı bekler.
+      - name: Yığını sunucudaki gibi başlat
+        run: bash docker/server/deploy.sh ci localhost 3002
+      - name: Yığını sına
+        run: |
+          url=http://127.0.0.1:3002
+          curl -fsS "$url/api/health" | grep -q '"status":"ok"'
+          curl -fsS "$url/" | grep -q "Hacklenmeden önce"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$url/boyle-bir-sayfa-yok")" = 404
+          curl -sI "$url/" | grep -qi '^x-frame-options: DENY'
+          curl -sI "$url/" | grep -qi "^content-security-policy: default-src 'self'"
+          # Veritabanı dışarıya port açmıyor.
+          if (echo > /dev/tcp/127.0.0.1/5432) 2> /dev/null; then echo "5432 açık olmamalı"; exit 1; fi
+          # İkinci yayın (aynı sürüm) da sorunsuz; veritabanı artık var, migration'dan önce yedek alır.
+          bash docker/server/deploy.sh ci localhost 3002
+          ls /opt/backups/cyberguard/cyberguard-predeploy-*.dump
+      # Örnek veri (docker/server/demo-data.sh, yayındaki "demo-data" işlemi): migration imajında
+      # eklenir, sitede görünür, baştan kurulur ve silinir; silince örnek olmayan hiçbir satır gitmez.
+      - name: Örnek veri ekle ve sil
+        run: |
+          # shellcheck disable=SC2016 # $1 ve POSTGRES_* konteynerin içinde açılır
+          sql() { docker compose -f docker-compose.yml -f docker/server/compose.yml exec -T db sh -c 'psql -X -A -t -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "$1"' sh "$1"; }
+          url=http://127.0.0.1:3002
+          # Örnek okulları, ipuçlarını ve haberleri ilk yönetici eklemiş görünür; yöneticisiz eklenmez.
+          if printf 'ci-ornek-sifresi-123' | bash docker/server/demo-data.sh add; then echo "Yöneticisiz eklenmemeliydi."; exit 1; fi
+          sql "INSERT INTO \"User\" (id, \"displayName\", email, \"emailVerified\", role, \"updatedAt\") VALUES ('ciadmin', 'CI Yönetici', 'ci-yonetici@example.com', true, 'ADMIN', now())"
+          counts() { sql "SELECT concat_ws(' ', (SELECT count(*) FROM \"User\"), (SELECT count(*) FROM \"Lab\"), (SELECT count(*) FROM \"Neighborhood\"), (SELECT count(*) FROM \"AuditLog\"))"; }
+          before=$(counts)
+          # Kısa şifre reddedilir; aşağıdaki "DEMO_PASSWORD ... olmalı" satırı beklenen sonuçtur.
+          if printf 'kisa' | bash docker/server/demo-data.sh add; then echo "Kısa şifre kabul edilmemeliydi."; exit 1; fi
+          printf 'ci-ornek-sifresi-123' | bash docker/server/demo-data.sh add | tee demo.txt
+          grep -q '^Örnek veri eklendi: 1 yönetici, 2 okul, 5 öğretmen, 4 başvuran, 34 öğrenci, 5 sınıf, 20 biten ve 1 yarım lab denemesi, 8 ipucu, 5 haber\.$' demo.txt
+          if grep -q '^Not:' demo.txt; then echo "Örnek lablar eksik eklendi."; exit 1; fi
+          test "$(sql "SELECT count(*) FROM \"Account\" WHERE \"userId\" LIKE 'demo-%'")" = 6
+          curl -fsS "$url/gundem" | grep -q "Örnek: Arkadaşından gelen"
+          curl -fsS "$url/gundem/ornek-sahte-kargo-mesajlari" | grep -q "kargo-teslimat-tr.xyz"
+          # Tekrar eklemek baştan kurar (çift satır yok).
+          printf 'ci-ornek-sifresi-123' | bash docker/server/demo-data.sh add > /dev/null
+          test "$(sql "SELECT count(*) FROM \"User\" WHERE id LIKE 'demo-%'")" = 44
+          bash docker/server/demo-data.sh remove | tee remove.txt
+          grep -q '^Örnek veri silindi: 44 hesap, 2 okul, 5 sınıf, 9 talep, 21 deneme, 8 ipucu, 5 haber\.$' remove.txt
+          test "$(counts)" = "$before"
+          for table in School Classroom TeacherApplication LabAttempt TrainingProgress DailyTip TipDay NewsArticle; do
+            test "$(sql "SELECT count(*) FROM \"$table\"")" = 0 || { echo "$table boşalmadı"; exit 1; }
+          done
+          ls /opt/backups/cyberguard/cyberguard-manual-*.dump
+      # Faz 6 bitti ölçütü: yedekten geri yükleme çalışıyor. Sunucudaki betiklerin ve gece
+      # zamanlayıcısının aynısı (docker/server/README.md, Yedekleme).
+      - name: Yedek ve geri yükleme denemesi
+        run: |
+          dir=/opt/backups/cyberguard
+          # Gece yedeği: zamanlayıcı kurulur, servis şimdi bir kez çalışır (yayın kullanıcısıyla).
+          bash docker/server/install-backup-timer.sh | tee timer.txt
+          grep -q '^BACKUP_TIMER=ready' timer.txt
+          sudo systemctl start cyberguard-backup.service
+          nightly=$(ls "$dir"/cyberguard-nightly-*.dump)
+          bash docker/server/restore-test.sh "$nightly" | tee restore.txt
+          tail -n 1 restore.txt | grep -q '^GERİ YÜKLEME BAŞARILI'
+
+          # Bozuk yedek geçmemeli: yarım dosya (sha256'sı da ona göre) ve tutmayan satır sayısı.
+          # Aşağıdaki iki "GERİ YÜKLEME BAŞARISIZ" satırı beklenen sonuçtur.
+          broken=$RUNNER_TEMP/broken
+          mkdir -p "$broken"
+          head -c "$(($(stat -c %s "$nightly") / 2))" "$nightly" > "$broken/half.dump"
+          sed "s/^# sha256: .*/# sha256: $(sha256sum "$broken/half.dump" | cut -d' ' -f1)/" "${nightly%.dump}.counts" > "$broken/half.counts"
+          if bash docker/server/restore-test.sh "$broken/half.dump"; then echo "Yarım yedek geçmemeliydi."; exit 1; fi
+          cp "$nightly" "$broken/rows.dump"
+          sed -E 's/^(public\."Neighborhood") [0-9]+$/\1 999/' "${nightly%.dump}.counts" > "$broken/rows.counts"
+          if bash docker/server/restore-test.sh "$broken/rows.dump"; then echo "Tutmayan satır sayısı geçmemeliydi."; exit 1; fi
+      # Yeni sürümün migration'ı düşerse site kapanmamalı: deploy.sh migration'ı "geri alındı" diye
+      # işaretleyip önceki sürüme döner (docker/server/README.md, Migration başarısız olursa).
+      - name: Düşen migration'dan geri dönüş
+        run: |
+          # "default" (docker sürücüsü): yukarıda yüklenen cyberguard-migrate:ci imajını görür.
+          docker buildx build --builder default --load -q --build-arg BASE=cyberguard-migrate:ci \
+            -t cyberguard-migrate:failing tests/deploy/failing-migration
+          docker tag cyberguard-app:ci cyberguard-app:failing
+          # Aşağıdaki migration hatası ve "Geri dönülüyor: ci" beklenen sonuçtur.
+          status=0
+          bash docker/server/deploy.sh failing localhost 3002 > failing.txt 2>&1 || status=$?
+          cat failing.txt
+          if [ "$status" = 0 ]; then echo "Bozuk sürüm yayına girmemeliydi."; exit 1; fi
+          grep -q "^Şema yayından önceki haliyle aynı" failing.txt
+          grep -q '^Geri dönülüyor: ci$' failing.txt
+          grep -q '^APP_VERSION=ci$' .env
+          curl -fsS http://127.0.0.1:3002/api/health | grep -q '"status":"ok"'
+          # Başarısız satır kalmadı, düşen migration geri alındı olarak işaretli.
+          # shellcheck disable=SC2016 # $1 ve POSTGRES_* konteynerin içinde açılır
+          sql() { docker compose -f docker-compose.yml -f docker/server/compose.yml exec -T db sh -c 'psql -X -A -t -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "$1"' sh "$1"; }
+          test "$(sql 'SELECT count(*) FROM _prisma_migrations WHERE finished_at IS NULL AND rolled_back_at IS NULL')" = 0
+          test "$(sql "SELECT bool_and(rolled_back_at IS NOT NULL) FROM _prisma_migrations WHERE migration_name = '29991231000000_failing_probe'")" = t
+      # Yarım kalan migration (kendi içinde COMMIT): deploy.sh işaretlemez, site kapalı kalır. Elle
+      # düzeltilmeden gelen bir sonraki yayın da işaretlememeli (şemanın yarım hali artık "yayından
+      # önceki hal"dir) ve hiçbir şeye dokunmadan durmalı (güvenlik turu 5). Sonra README'deki elle
+      # geri dönüş (yayın öncesi yedeğe dönmek) siteyi açar.
+      - name: Yarım kalan migration'dan sonraki yayın
+        run: |
+          docker buildx build --builder default --load -q --build-arg BASE=cyberguard-migrate:ci \
+            -t cyberguard-migrate:partial tests/deploy/partial-migration
+          docker tag cyberguard-app:ci cyberguard-app:partial
+          # shellcheck disable=SC2016 # $1 ve POSTGRES_* konteynerin içinde açılır
+          sql() { docker compose -f docker-compose.yml -f docker/server/compose.yml exec -T db sh -c 'psql -X -A -t -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "$1"' sh "$1"; }
+          probe=29991231000001_partial_probe
+          # Aşağıdaki migration hataları ve "BAŞARISIZ"/"durduruldu" satırları beklenen sonuçtur.
+          status=0
+          bash docker/server/deploy.sh partial localhost 3002 > partial.txt 2>&1 || status=$?
+          cat partial.txt
+          if [ "$status" = 0 ]; then echo "Yarım kalan migration'lı sürüm yayına girmemeliydi."; exit 1; fi
+          grep -q "^Şema yayından önceki haliyle aynı değil" partial.txt
+          grep -q '^APP_VERSION=ci$' .env
+          backup=$(sed -n 's/^Yapılacak: .*Yayın öncesi yedek: //p' partial.txt)
+          test -f "$backup"
+
+          # Bir sonraki yayın (aynı ya da düzeltilmiş sürüm): migration'ı işaretlemeden, yedek almadan durur.
+          before=$(ls /opt/backups/cyberguard)
+          status=0
+          bash docker/server/deploy.sh ci localhost 3002 > next.txt 2>&1 || status=$?
+          cat next.txt
+          if [ "$status" = 0 ]; then echo "Yarım migration düzeltilmeden yayın yapılmamalıydı."; exit 1; fi
+          grep -q "^Önceki bir yayından kalan başarısız migration var: $probe" next.txt
+          if grep -q "^Şema yayından önceki haliyle aynı:" next.txt; then echo "Yarım migration işaretlenmemeliydi."; exit 1; fi
+          test "$(sql "SELECT count(*) FROM _prisma_migrations WHERE migration_name = '$probe' AND finished_at IS NULL AND rolled_back_at IS NULL")" = 1
+          test "$(ls /opt/backups/cyberguard)" = "$before"
+
+          # README, "Acil durumda gerçek geri yükleme": yayın öncesi yedeğe dön, önceki sürümü başlat.
+          dc() { docker compose -f docker-compose.yml -f docker/server/compose.yml "$@"; }
+          dc stop app
+          # shellcheck disable=SC2016 # POSTGRES_* konteynerin içinde açılır
+          dc exec -T db sh -c 'dropdb -U "$POSTGRES_USER" --force "$POSTGRES_DB" && createdb -U "$POSTGRES_USER" "$POSTGRES_DB"'
+          # shellcheck disable=SC2016 # POSTGRES_* konteynerin içinde açılır
+          dc exec -T db sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --exit-on-error --single-transaction' < "$backup"
+          dc up -d --no-build
+          for _ in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:3002/api/health 2> /dev/null | grep -q '"status":"ok"' && break
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:3002/api/health | grep -q '"status":"ok"'
+          test "$(sql "SELECT count(*) FROM _prisma_migrations WHERE migration_name = '$probe'")" = 0
+          test "$(sql "SELECT to_regclass('\"PartialProbe\"') IS NULL")" = t
+      - name: Yığın kayıtları
+        if: failure()
+        run: |
+          docker compose -f docker-compose.yml -f docker/server/compose.yml logs --no-color --tail 100
+          sudo journalctl -u cyberguard-backup --no-pager -n 50 || true
+
+  deploy:
+    name: Yayın
+    needs: [checks, docker]
+    # main'e her girişte, testler geçince yayın (PR'lar yayınlamaz). Uçtan uca testler main'de
+    # çalışmaz; yayın sonrası canlı adreste koşar (deploy.yml).
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      operation: deploy
+    secrets: inherit

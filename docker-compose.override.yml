@@ -1,0 +1,8 @@
+# Yalnızca yerel geliştirme: docker compose bu dosyayı kendiliğinden ekler.
+# Sunucuya kopyalanmaz (orada docker/server/compose.yml kullanılır).
+
+services:
+  db:
+    # npm run dev ve prisma komutları veritabanına localhost:5432'den bağlanır.
+    ports:
+      - "127.0.0.1:5432:5432"

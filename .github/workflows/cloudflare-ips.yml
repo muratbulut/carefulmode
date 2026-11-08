@@ -1,0 +1,55 @@
+# Cloudflare aralık listesinin haftalık kontrolü: docker/server/cloudflare-ips.txt, Cloudflare'in
+# yayımladığı listeyle (https://www.cloudflare.com/ips-v4 ve ips-v6) aynı mı?
+#
+# nginx girişimiz yalnızca bu aralıklardan gelen bağlantıyı kabul eder (sabah soruları 23).
+# Cloudflare yeni bir aralık ekler de liste güncellenmezse o aralıktan gelen ziyaretçiler siteye
+# giremez. Fark varsa iş kırmızı biter (GitHub depo sahibine e-posta gönderir) ve eksik ya da
+# fazla aralıklar iş özetinde yazar; liste cloudflare-ips.txt'te güncellenip PR ile yayına girer.
+#
+# Sunucuya bağlanmaz, sır kullanmaz. Haftada bir koşu, Actions dakikasından ayda birkaç dakika düşer.
+name: Cloudflare aralıkları
+
+on:
+  schedule:
+    - cron: "17 6 * * 1" # Pazartesi 09:17 (Türkiye)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    name: Liste karşılaştırması
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Cloudflare'in listesiyle karşılaştır
+        run: |
+          set -euo pipefail
+          fetch() { curl -fsS --retry 3 --retry-delay 5 --max-time 20 "$1"; echo; }
+          { fetch https://www.cloudflare.com/ips-v4; fetch https://www.cloudflare.com/ips-v6; } \
+            | tr -d '\r' | sed '/^[[:space:]]*$/d' | sort -u > published.txt
+          sed -e 's/#.*//' -e 's/[[:space:]]//g' docker/server/cloudflare-ips.txt | sed '/^$/d' | sort -u > ours.txt
+          # Cloudflare'den boş ya da bozuk yanıt gelirse karşılaştırma yapılmaz.
+          if [ "$(wc -l < published.txt)" -lt 10 ] || grep -qvE '^[0-9a-fA-F:.]+/[0-9]{1,3}$' published.txt; then
+            echo "::error::Cloudflare'in listesi okunamadı."
+            cat published.txt
+            exit 1
+          fi
+          missing=$(comm -13 ours.txt published.txt)
+          extra=$(comm -23 ours.txt published.txt)
+          if [ -z "$missing" ] && [ -z "$extra" ]; then
+            echo "Liste güncel ($(wc -l < ours.txt) aralık)."
+            exit 0
+          fi
+          {
+            echo "## Cloudflare aralık listesi değişmiş"
+            echo
+            echo "docker/server/cloudflare-ips.txt güncellenmeli (\"Son denetim\" tarihiyle birlikte)."
+            echo
+            if [ -n "$missing" ]; then echo "Bizde olmayan, Cloudflare'in eklediği aralıklar:"; echo '```'; echo "$missing"; echo '```'; fi
+            if [ -n "$extra" ]; then echo "Cloudflare'in listesinde artık olmayan aralıklar:"; echo '```'; echo "$extra"; echo '```'; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::Cloudflare aralık listesi değişmiş; docker/server/cloudflare-ips.txt güncellenmeli (ayrıntı iş özetinde)."
+          exit 1

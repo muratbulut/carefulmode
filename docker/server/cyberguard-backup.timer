@@ -1,0 +1,15 @@
+# CyberGuard: gece yedeğinin zamanı. docker/server/install-backup-timer.sh kurar.
+
+[Unit]
+Description=CyberGuard veritabanı yedeği: her gece 03:30 (Türkiye saati)
+
+[Timer]
+# Sunucunun saat diliminden bağımsız olarak Türkiye saatiyle.
+OnCalendar=*-*-* 03:30:00 Europe/Istanbul
+# Sunucu o saatte kapalıysa açılınca bir kez çalışır.
+Persistent=true
+AccuracySec=1min
+Unit=cyberguard-backup.service
+
+[Install]
+WantedBy=timers.target

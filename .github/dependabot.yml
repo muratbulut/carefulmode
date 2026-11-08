@@ -1,0 +1,32 @@
+# Bağımlılık güncellemeleri (doküman Bölüm 8). Ayda bir (Actions dakikası, 29 Ekim), gruplu PR'lar.
+# npm'de ayda en çok iki PR (2 Kasım, Murat; her PR tam CI koşar): küçük güncellemeler (minor,
+# patch) tek PR'da, büyük sürüm atlamaları ayrı tek PR'da, ki kırılan bir büyük sürüm küçükleri
+# bekletmesin. Actions ve Docker güncellemeleri de kendi ekosisteminde tek PR.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      kucuk:
+        patterns: ["*"]
+        update-types: [minor, patch]
+      buyuk:
+        patterns: ["*"]
+        update-types: [major]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+  - package-ecosystem: docker
+    directory: /docker
+    schedule:
+      interval: monthly
+    groups:
+      docker:
+        patterns: ["*"]
