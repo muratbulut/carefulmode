@@ -1,0 +1,221 @@
+/*
+ * Flash bellek sahnesi (tuvalde usb.html). Sınıflar sahnenin kök sınıfıyla başlar; ortak sınıfları
+ * (scene.css) ezen kurallar kök sınıfın altında yazılır, böylece seçici daha güçlüdür ve dosyaların
+ * yüklenme sırası önemsizdir.
+ */
+
+.hs-usb .hs-usb-laptop {
+  top: 28px;
+  left: 24px;
+  width: 336px;
+}
+
+.hs-usb .hs-usb-screen {
+  height: 250px;
+}
+
+.hs-usb .hs-usb-laptop-base {
+  height: 16px;
+  border-radius: 2px 3px 9px 9px;
+}
+
+.hs-usb-desk {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 70% at 50% 40%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 70%);
+}
+
+.hs-usb-dialog {
+  position: absolute;
+  top: 26px;
+  right: 22px;
+  left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.hs-usb-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--fg-3);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.hs-usb-title svg {
+  width: 15px;
+  height: 15px;
+  color: var(--warning);
+}
+
+.hs-usb-question {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.hs-usb-detail {
+  color: var(--fg-3);
+  font-size: 13px;
+}
+
+.hs-usb-detail b {
+  color: var(--fg-2);
+  font-weight: 600;
+}
+
+/*
+ * Bellek: tabanın sağ yan yüzündeki yuvaya yatay girer. Kırpma kutusu yuvanın ağzından başlar,
+ * fiş içeri girince görünmez olur, gövde kenara yaslanır.
+ */
+.hs-usb-slot {
+  position: absolute;
+  top: 253px;
+  left: 354px;
+  width: 4px;
+  height: 10px;
+  border-radius: 1px;
+  background: var(--scene-port);
+}
+
+.hs-usb-clip {
+  position: absolute;
+  top: 244px;
+  left: 358px;
+  width: 110px;
+  height: 28px;
+  overflow: hidden;
+}
+
+.hs-usb-stick {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 70px;
+  height: 28px;
+  animation: hs-usb-in 10s cubic-bezier(0.3, 0.7, 0.4, 1) infinite;
+}
+
+.hs-usb-plug {
+  position: absolute;
+  top: 9px;
+  left: 0;
+  width: 15px;
+  height: 10px;
+  border-radius: 1px;
+  background: linear-gradient(180deg, var(--scene-metal), var(--scene-metal-2));
+}
+
+.hs-usb-plug::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 3px;
+  height: 3px;
+  background: var(--scene-metal-3);
+  box-shadow: 5px 0 0 var(--scene-metal-3);
+}
+
+.hs-usb-body {
+  position: absolute;
+  top: 2px;
+  left: 14px;
+  width: 54px;
+  height: 24px;
+  border-radius: 4px 8px 8px 4px;
+  background: linear-gradient(180deg, var(--scene-device-3), var(--scene-usb));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--scene-white) 12%, transparent);
+}
+
+.hs-usb-led {
+  position: absolute;
+  top: 11px;
+  left: 58px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  box-shadow: 0 0 6px var(--danger);
+  animation: hs-usb-led 10s steps(1) infinite;
+}
+
+.hs-usb-tag {
+  position: absolute;
+  top: 278px;
+  left: 300px;
+  z-index: 3;
+  padding: 5px 9px;
+  border-radius: 7px;
+  background: var(--scene-yellow);
+  color: var(--on-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  transform: rotate(-5deg);
+  box-shadow: 0 8px 18px var(--shadow-color-soft);
+  animation: hs-usb-tag 10s cubic-bezier(0.3, 0.7, 0.4, 1) infinite;
+}
+
+.hs-usb .hs-usb-found {
+  top: 356px;
+  right: 4px;
+}
+
+@keyframes hs-usb-in {
+  0%,
+  5% {
+    transform: translateX(30px);
+  }
+  12% {
+    transform: translateX(-15px);
+  }
+  13%,
+  62% {
+    transform: translateX(-14px);
+  }
+  70%,
+  100% {
+    transform: translateX(30px);
+  }
+}
+
+@keyframes hs-usb-tag {
+  0%,
+  5% {
+    transform: translateX(44px) rotate(-5deg);
+  }
+  12% {
+    transform: translateX(-1px) rotate(-5deg);
+  }
+  13%,
+  62% {
+    transform: rotate(-5deg);
+  }
+  70%,
+  100% {
+    transform: translateX(44px) rotate(-5deg);
+  }
+}
+
+@keyframes hs-usb-led {
+  0%,
+  13% {
+    opacity: 0;
+  }
+  14%,
+  62% {
+    opacity: 1;
+  }
+  63%,
+  100% {
+    opacity: 0;
+  }
+}

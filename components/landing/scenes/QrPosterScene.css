@@ -1,0 +1,320 @@
+/*
+ * Koridor afişindeki QR sahnesi (tuvalde apk.html). Sınıflar sahnenin kök sınıfıyla başlar; ortak
+ * sınıfları (scene.css) ezen kurallar kök sınıfın altında yazılır, böylece seçici daha güçlüdür ve
+ * dosyaların yüklenme sırası önemsizdir.
+ */
+
+.hs-qr-poster {
+  position: absolute;
+  top: 44px;
+  left: 6px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 212px;
+  padding: 18px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: 0 24px 48px var(--shadow-color);
+  rotate: -3deg;
+}
+
+/* Afişi tutan iki bant. */
+.hs-qr-poster::before,
+.hs-qr-poster::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  width: 46px;
+  height: 16px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--scene-yellow) 55%, transparent);
+}
+
+.hs-qr-poster::before {
+  left: 18px;
+  transform: rotate(-8deg);
+}
+
+.hs-qr-poster::after {
+  right: 18px;
+  transform: rotate(8deg);
+}
+
+.hs-qr-poster-title {
+  color: var(--warning-fg);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.hs-qr-poster-text {
+  color: var(--fg-2);
+  font-size: 13px;
+  text-align: center;
+}
+
+.hs-qr-poster-qr {
+  width: 124px;
+  height: 124px;
+}
+
+.hs-qr-poster-place {
+  color: var(--fg-3);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.hs-qr-paper {
+  fill: var(--scene-qr-paper);
+}
+
+.hs-qr-ink {
+  fill: var(--qr-fg);
+}
+
+/* Telefon: ince metal kenar, yan tuşlar, durum çubuğu, sistem penceresi gibi alt sayfa. */
+.hs-qr-phone {
+  position: absolute;
+  top: 30px;
+  left: 246px;
+  z-index: 2;
+  width: 236px;
+  height: 392px;
+  padding: 7px;
+  border-radius: 38px;
+  background: linear-gradient(145deg, var(--scene-device-3), var(--scene-device) 45%, var(--scene-device-2));
+  box-shadow:
+    0 26px 52px var(--shadow-color),
+    inset 0 0 0 1px color-mix(in srgb, var(--scene-white) 8%, transparent);
+}
+
+.hs-qr-phone::before,
+.hs-qr-phone::after {
+  content: "";
+  position: absolute;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--scene-device-2);
+}
+
+.hs-qr-phone::before {
+  top: 96px;
+  left: -2px;
+  height: 38px;
+}
+
+.hs-qr-phone::after {
+  top: 116px;
+  right: -2px;
+  height: 58px;
+}
+
+.hs-qr-glass {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 31px;
+  background: var(--surface);
+}
+
+.hs-qr-island {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  z-index: 3;
+  width: 64px;
+  height: 18px;
+  margin-left: -32px;
+  border-radius: 10px;
+  background: var(--scene-port);
+}
+
+.hs-qr-status {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+  padding: 0 20px 0 22px;
+  color: var(--scene-camera-ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hs-qr-battery {
+  position: relative;
+  display: inline-block;
+  width: 18px;
+  height: 9px;
+  border: 1.5px solid var(--scene-camera-ink-2);
+  border-radius: 3px;
+}
+
+.hs-qr-battery::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 1px;
+  width: 10px;
+  border-radius: 1px;
+  background: var(--scene-camera-ink-2);
+}
+
+.hs-qr-camera {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 186px;
+  padding-top: 16px;
+  background: radial-gradient(ellipse at 50% 45%, var(--scene-camera), var(--scene-camera-edge) 75%);
+}
+
+.hs-qr-camera-qr {
+  width: 88px;
+  height: 88px;
+  transform: rotate(-3deg);
+}
+
+/* Kameranın kodu yakaladığını gösteren köşeler. */
+.hs-qr-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 118px;
+  height: 118px;
+  margin: -51px 0 0 -59px;
+  animation: hs-qr-lock 10s ease-out infinite;
+}
+
+.hs-qr-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--scene-yellow);
+}
+
+.hs-qr-corner:nth-child(1) {
+  top: 0;
+  left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 9px 0 0 0;
+}
+
+.hs-qr-corner:nth-child(2) {
+  top: 0;
+  right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  border-radius: 0 9px 0 0;
+}
+
+.hs-qr-corner:nth-child(3) {
+  bottom: 0;
+  left: 0;
+  border-top: 0;
+  border-right: 0;
+  border-radius: 0 0 0 9px;
+}
+
+.hs-qr-corner:nth-child(4) {
+  right: 0;
+  bottom: 0;
+  border-top: 0;
+  border-left: 0;
+  border-radius: 0 0 9px 0;
+}
+
+.hs-qr-sheet {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 10px 16px 18px;
+  border-radius: 24px 24px 0 0;
+  background: var(--card);
+  box-shadow: 0 -12px 28px var(--shadow-color-soft);
+}
+
+.hs-qr-grab {
+  align-self: center;
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line-strong);
+}
+
+.hs-qr-link {
+  display: flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 11px;
+  border-radius: 11px;
+  background: var(--surface-raised);
+  white-space: nowrap;
+}
+
+.hs-qr-address {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--fg);
+  font-size: 12.5px;
+}
+
+.hs-qr-question {
+  color: var(--fg);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.hs-qr .hs-qr-note {
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.hs-qr-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.hs-qr .hs-qr-action {
+  justify-content: center;
+  height: 36px;
+  border-radius: 11px;
+  font-size: 14px;
+}
+
+@keyframes hs-qr-lock {
+  0%,
+  8% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+  16%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
