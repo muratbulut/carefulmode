@@ -1,0 +1,78 @@
+{
+  "slug": "oltalama-egitimi",
+  "neighborhood": "oltalama-limani",
+  "type": "TRAINING",
+  "template": "TRAINING",
+  "sortOrder": 0,
+  "status": "PUBLISHED",
+  "content": {
+    "meta": {
+      "name": "Oltalama eğitim odası",
+      "title": "",
+      "summary": "Oltalama nedir, sahte mail nasıl anlaşılır? Kısa kartlarla öğren.",
+      "story": "Kart kart ilerleyen kısa bir ders. Aralarda şüpheli yeri bulacak ve küçük bir soruya cevap vereceksin.",
+      "learn": [],
+      "difficulty": "EASY",
+      "durationMin": 4
+    },
+    "cards": [
+      {
+        "id": "nedir",
+        "type": "info",
+        "title": "Oltalama nedir?",
+        "paragraphs": [
+          "Oltalama, birinin güvendiğin bir kurum gibi davranıp senden şifre, kart bilgisi ya da kişisel bilgi istemesidir. En çok mail ve SMS ile gelir.",
+          "Amaç, düşünmeden tıklamanı sağlamaktır. O yüzden bu mailler hep acele ettirir."
+        ],
+        "points": []
+      },
+      {
+        "id": "bul",
+        "type": "clickFind",
+        "title": "Bu maildeki 3 şüpheli yeri bul",
+        "hint": "Şüpheli gördüğün yere tıkla.",
+        "mail": {
+          "sender": "Kargo Takip",
+          "address": "bilgi@kargo-teslimat-tr.xyz",
+          "subject": "Paketiniz teslim edilemedi!",
+          "time": "09:41",
+          "paragraphs": [
+            "Sayın müşterimiz,",
+            "Adres bilginiz eksik olduğu için paketiniz dağıtıma çıkarılamadı.",
+            "24 saat içinde güncellemezseniz paketiniz iade edilecektir."
+          ],
+          "button": "Adresi güncelle",
+          "footer": "Kargo Takip Hizmetleri · Bu mail otomatik gönderilmiştir."
+        },
+        "spots": [
+          { "part": "address", "text": "Gönderen adresi kargo firmasının resmi adresi değil. \"kargo-teslimat-tr.xyz\" kimseye ait olabilir." },
+          { "part": "p2", "text": "Acele ettirmek bir tuzak işareti. Gerçek firmalar paketini 24 saatte iade etmekle tehdit etmez." },
+          { "part": "button", "text": "Buton seni sahte bir siteye götürür. Bilgisayarda üzerine gelince, telefonda basılı tutunca gerçek adresi görürsün." }
+        ]
+      },
+      {
+        "id": "test",
+        "type": "quiz",
+        "question": "Kargo firmasından geldiğini söyleyen bir mailin gerçek olup olmadığını en güvenli nasıl anlarsın?",
+        "options": [
+          "Maildeki butona tıklayıp açılan siteye bakarım.",
+          "Kargo firmasının uygulamasını ya da sitesini kendim açıp takip numarama bakarım.",
+          "Maile cevap yazıp gerçekten onlar mı diye sorarım."
+        ],
+        "answer": 1,
+        "explain": "Maildeki bağlantı seni nereye isterse oraya götürür. Uygulamayı ya da siteyi kendin açarsan sahte siteye düşmezsin."
+      },
+      {
+        "id": "ne-yaparsin",
+        "type": "info",
+        "title": "Şüphelendiysen ne yaparsın?",
+        "paragraphs": ["Odada tam olarak bunları yapacaksın."],
+        "points": [
+          { "title": "Tıklama, cevap verme", "text": "Maildeki bağlantıya, butona ya da eke dokunma." },
+          { "title": "Kendin kontrol et", "text": "Kargo firmasının uygulamasını ya da sitesini kendin aç, takip numarana bak." },
+          { "title": "Bildir ve sil", "text": "Postam'da \"Oltalama olarak bildir\" ile maili bildir. Böylece başkaları da korunur." }
+        ]
+      }
+    ]
+  }
+}

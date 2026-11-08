@@ -1,0 +1,139 @@
+{
+  "slug": "sahte-kargo-maili",
+  "neighborhood": "oltalama-limani",
+  "type": "SCENARIO",
+  "template": "INBOX",
+  "sortOrder": 1,
+  "status": "PUBLISHED",
+  "content": {
+    "meta": {
+      "name": "Sahte kargo maili",
+      "title": "Kargonuz kapıda... değil!",
+      "summary": "Paketin yolda, gelen kutun dolu. Hangisi gerçek, hangisi tuzak?",
+      "story": "Kargon yolda ve gelen kutun dolu. Hangi mail gerçek, hangisi seni tuzağa çekmeye çalışıyor? Postam'da kendin karar ver.",
+      "learn": [
+        { "title": "Gönderen adresine bakarak sahte maili ayırt etmek", "text": "Görünen isim değil, @ işaretinden sonrası önemli." },
+        { "title": "Bağlantının gerçek adresini tıklamadan görmek", "text": "Butonun arkasında hangi site var, önce ona bak." },
+        { "title": "Acele ettirme ve korkutma taktiklerini fark etmek", "text": "\"24 saat içinde\" gibi cümleler düşünmeni engellemek içindir." }
+      ],
+      "difficulty": "EASY",
+      "durationMin": 8
+    },
+    "reminders": [
+      "Gönderen adresine bak: Görünen isim değil, @ işaretinden sonrası önemli.",
+      "Acele ettiriyorsa dur: \"24 saat içinde\" gibi cümleler düşünmeni engeller.",
+      "Linke tıklamadan önce adresine bak: Bilgisayarda üzerine gel, telefonda basılı tut."
+    ],
+    "items": [
+      {
+        "id": "kargo",
+        "kind": "fake",
+        "sender": "Kargo Takip",
+        "address": "bilgi@kargo-teslimat-tr.xyz",
+        "subject": "Paketiniz teslim edilemedi!",
+        "time": "09:41",
+        "body": "Sayın müşterimiz,\n\nAdres bilginiz eksik olduğu için paketiniz dağıtıma çıkarılamadı.\n\n**24 saat içinde güncellemezseniz paketiniz iade edilecektir.**",
+        "footer": "Takip no: TR884213907 · Kargo Takip Hizmetleri\nBu mail otomatik gönderilmiştir, lütfen yanıtlamayınız.",
+        "link": { "url": "kargo-teslimat-tr.xyz/adres-guncelle?id=88421", "text": "Adresi güncelle" },
+        "attachment": null,
+        "signs": [
+          { "at": "sender", "text": "Adres kargo firmasının değil: kargo-teslimat-tr.xyz kimseye ait olabilir.", "quote": "kargo-teslimat-tr.xyz" },
+          { "at": "text", "text": "\"24 saat içinde\" diye acele ettiriyor. Gerçek firmalar paketini 24 saatte iade etmekle tehdit etmez.", "quote": "24 saat içinde" },
+          { "at": "link", "text": "Link firmanın sitesine değil, benzer bir adrese gidiyor.", "quote": "Adresi güncelle" }
+        ],
+        "why": "Gönderen adresi kargo-teslimat-tr.xyz. \"24 saat\" baskısı ve adres güncelleme linki tipik oltalama işaretleri."
+      },
+      {
+        "id": "okul",
+        "kind": "real",
+        "sender": "Okul Duyuru",
+        "address": "duyuru@ornek-ortaokulu.k12.tr",
+        "subject": "Veli toplantısı saati değişti",
+        "time": "08:15",
+        "body": "Değerli velilerimiz ve sevgili öğrencilerimiz,\n\n15 Ekim Çarşamba günü yapılacak veli toplantısı 17.00 yerine **18.00**'de okulumuzun konferans salonunda yapılacaktır.\n\nAyrıntılar okulumuzun internet sitesinde de yer almaktadır.",
+        "footer": "Örnek Ortaokulu Müdürlüğü",
+        "link": null,
+        "attachment": null,
+        "signs": [],
+        "why": "Okulun bilinen adresinden geliyor, link yok, senden bir şey istemiyor."
+      },
+      {
+        "id": "market",
+        "kind": "real",
+        "sender": "Market Puan",
+        "address": "siparis@marketpuan.com.tr",
+        "subject": "Siparişin yola çıktı",
+        "time": "Dün",
+        "body": "Merhaba,\n\n7 Ekim tarihli siparişin kargoya verildi. Tahmini teslimat: **10-11 Ekim**.\n\nSiparişini Market Puan uygulamasındaki \"Siparişlerim\" bölümünden takip edebilirsin.",
+        "footer": "Market Puan · Bu maile yanıt vermene gerek yok.",
+        "link": { "url": "marketpuan.com.tr/siparislerim", "text": "Siparişlerim" },
+        "attachment": null,
+        "signs": [],
+        "why": "Kendi adresinden geliyor; senden bilgi istemiyor, uygulamayı açmanı söylüyor."
+      },
+      {
+        "id": "elif",
+        "kind": "real",
+        "sender": "Elif",
+        "address": "elif.k@postam.com",
+        "subject": "Ödev dosyası",
+        "time": "Dün",
+        "body": "Selam! 👋\n\nFen ödevinin dosyasını ekledim, akşam bakarsın. Yarın teneffüste konuşuruz.",
+        "footer": "",
+        "link": null,
+        "attachment": { "name": "fen-odevi.pdf", "size": "240 KB" },
+        "signs": [],
+        "why": "Tanıdığın biri, beklediğin bir ödev dosyası. Beklemediğin bir ek gelseydi önce Elif'e sorardın."
+      }
+    ],
+    "trap": {
+      "url": "kargo-teslimat-tr.xyz/adres-guncelle",
+      "title": "Paketiniz depoda bekliyor",
+      "text": "Teslimat adresinizi güncellemek için önce Postam hesabınızla kimliğinizi doğrulayın.",
+      "ask": "Postam şifresi",
+      "secret": "",
+      "kind": "account",
+      "realLife": "",
+      "actions": []
+    },
+    "tasks": [
+      { "id": "ac", "type": "action", "text": "Gelen kutunu aç, maillere göz at", "options": [], "right": "", "why": "" },
+      {
+        "id": "incele",
+        "type": "review",
+        "text": "Gelen kutunu incele, şüpheli bulduklarını bildir",
+        "options": []
+      },
+      {
+        "id": "okul-sorusu",
+        "type": "question",
+        "text": "Okul Duyuru'dan gelen mail için ne düşünüyorsun?",
+        "options": [
+          { "text": "Gerçek bir duyuru, güvenli görünüyor", "points": 1 },
+          { "text": "Sahte, bildirmek gerekir", "points": 0 },
+          { "text": "Emin değilim, okulun sitesinden kontrol ederim", "points": 2 }
+        ],
+        "right": "Gerçek görünüyor; emin değilsen okulun kendi sitesinden kontrol etmek.",
+        "why": "Gerçek gibi duran her şeyi bir kez de resmi kaynaktan doğrulamak en sağlam alışkanlık."
+      },
+      {
+        "id": "market-sorusu",
+        "type": "question",
+        "text": "Market Puan siparişini nasıl kontrol edersin?",
+        "options": [
+          { "text": "Maildeki linke tıklarım", "points": 0 },
+          { "text": "Market Puan uygulamasını kendim açıp bakarım", "points": 1 },
+          { "text": "Maile cevap yazıp sorarım", "points": 0 }
+        ],
+        "right": "Market Puan uygulamasını kendin açıp bakmak.",
+        "why": "Linke tıklamadan, bildiğin yoldan girersen sahte sayfaya düşmezsin."
+      }
+    ],
+    "tips": [
+      { "text": "Linke tıklamadan önce üzerine gel (telefonda basılı tut) ve adresi oku.", "when": "engaged" },
+      { "text": "Şifreni sadece uygulamayı kendin açarak gir, mail linkinden asla.", "when": "hacked" },
+      { "text": "Gönderen adresinde @ işaretinden sonrasına bak.", "when": "missedFake" },
+      { "text": "Gerçek mailleri de tanı: bildiğin adres ve senden bir şey istemiyorsa büyük ihtimalle güvenli.", "when": "reportedReal" }
+    ]
+  }
+}
