@@ -31,9 +31,13 @@ const currentAddress = () => window.location.pathname + window.location.search;
 
 type Cover = { kind: "loading" | "out"; from: string };
 
-/** Tıklanan bağlantı bu sitede başka bir sayfaya mı gidiyor? */
+/**
+ * Tıklanan bağlantı bu sitede başka bir sayfaya mı gidiyor? e.defaultPrevented'a bakılmaz: Next'in
+ * <Link>'i kendi geçişini yapmak için tıklamayı hep iptal eder. Gezintiyi gerçekten durduran yerler
+ * (kaydedilmemiş değişiklik soran editörler) tıklamayı yakalama aşamasında durdurur, buraya hiç gelmez.
+ */
 function internalTarget(e: MouseEvent): URL | null {
-  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return null;
+  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return null;
   const link = e.target instanceof Element ? e.target.closest("a[href]") : null;
   if (!(link instanceof HTMLAnchorElement)) return null;
   if ((link.target && link.target !== "_self") || link.hasAttribute("download")) return null;
@@ -80,11 +84,12 @@ export function PageOverlay() {
       setCover({ kind: "out", from: currentAddress() });
       giveUp = window.setTimeout(() => setCover(null), SIGN_OUT_MS);
     }
-    document.addEventListener("click", onClick);
+    // window'da, kabarcık aşamasında: Link'in kendi işleyicisinden sonra ve yalnızca tıklama durdurulmadıysa.
+    window.addEventListener("click", onClick);
     window.addEventListener(SIGN_OUT_EVENT, onSignOut);
     return () => {
       clear();
-      document.removeEventListener("click", onClick);
+      window.removeEventListener("click", onClick);
       window.removeEventListener(SIGN_OUT_EVENT, onSignOut);
     };
   }, []);

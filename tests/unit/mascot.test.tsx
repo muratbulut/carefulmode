@@ -130,6 +130,32 @@ describe("sayfa geçişi örtüsü", () => {
     a.remove();
   });
 
+  it("Next'in Link'i gibi tıklamayı iptal eden bağlantıda da görünür", () => {
+    render(<PageOverlay />);
+    const a = link("/odalar");
+    const cancel = (e: Event) => e.preventDefault();
+    a.addEventListener("click", cancel);
+    a.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+    act(() => vi.advanceTimersByTime(SHOW_AFTER_MS + 10));
+    expect(screen.getByTestId("page-overlay")).toBeInTheDocument();
+    a.remove();
+  });
+
+  it("sayfadan çıkmayı soran editör tıklamayı durdurunca görünmez", () => {
+    render(<PageOverlay />);
+    const a = link("/odalar");
+    const ask = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    document.addEventListener("click", ask, true);
+    a.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+    act(() => vi.advanceTimersByTime(1000));
+    expect(screen.queryByTestId("page-overlay")).toBeNull();
+    document.removeEventListener("click", ask, true);
+    a.remove();
+  });
+
   it("dış bağlantıda, yeni sekmede ve aynı sayfadaki çapada görünmez", () => {
     render(<PageOverlay />);
     const links = [link("https://ornek.example/"), link("/odalar", { target: "_blank" }), link("/#adimlar")];
