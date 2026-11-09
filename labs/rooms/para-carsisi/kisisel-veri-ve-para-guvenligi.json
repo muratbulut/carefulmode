@@ -1,0 +1,218 @@
+{
+  "slug": "kisisel-veri-ve-para-guvenligi",
+  "neighborhood": "para-carsisi",
+  "type": "TRAINING",
+  "template": "TRAINING",
+  "sortOrder": 0,
+  "status": "PUBLISHED",
+  "content": {
+    "meta": {
+      "name": "Kişisel veri ve para güvenliği",
+      "title": "Bedava peynir sadece fare kapanında",
+      "summary": "Kimseye verilmeyen bilgiler, \"bedava ama 1 TL\" tuzağı ve şüphelendiğinde atacağın üç adım.",
+      "story": "Oyunlar, uygulamalar ve çekilişler senden sürekli bir şey istiyor: adını, okulunu, bazen de ailenin kart bilgisini. Bunların bir kısmı zararsız, bir kısmı ise birinin eline geçince ailenin hesabından para çekilmesine yetiyor. Bu odada hangi bilginin neden değerli olduğunu, sahte bir hediye mailinin nasıl anlaşıldığını ve para ya da bilgi istendiğinde ne yapacağını öğreneceksin.",
+      "learn": [
+        {
+          "title": "Kimseye verilmeyenler",
+          "text": "T.C. kimlik numarası, kart numarası, son kullanma tarihi, CVV, SMS onay kodu ve şifre neden kimseye verilmez?"
+        },
+        {
+          "title": "\"Bedava ama küçük bir ücret\"",
+          "text": "1 TL'lik \"doğrulama\" neden aslında kartın tamamını ister?"
+        },
+        {
+          "title": "Dur, sor, kontrol et",
+          "text": "Para ya da bilgi istendiğinde atacağın üç adım."
+        }
+      ],
+      "difficulty": "EASY",
+      "durationMin": 9
+    },
+    "cards": [
+      {
+        "id": "kisisel-veri-videosu",
+        "type": "video",
+        "title": "Ayşegül ve Ayça: üç kutu",
+        "src": "/videolar/kisisel-veri-nedir.mp4",
+        "duration": "1:45",
+        "question": {
+          "at": 81,
+          "question": "Çekiliş formu TC kimlik numaranı istiyor. Bu bilgi hangi kutuya girer?",
+          "options": ["Herkesle paylaşılabilir", "Düşünerek, tanıdıklarla", "Kimseye verilmez"],
+          "answer": 2,
+          "explain": "TC kimlik numarası seni resmî olarak tanıtır, kimseye verilmez. Gerçek bir okul çekilişi onu sormaz."
+        }
+      },
+      {
+        "id": "kisisel-veri",
+        "type": "info",
+        "title": "Kişisel veri nedir?",
+        "layout": "explore",
+        "paragraphs": [
+          "Kişisel veri, seni tanımaya ya da bulmaya yarayan her bilgidir. Tek başına küçük görünen bilgiler bir araya gelince birinin seni ya da aileni kandırmasına yeter.",
+          "Bazı bilgiler arkadaşlarınla paylaşılabilir, bazıları ise hiç kimseyle. Aradaki farkı bilmek, kimin neden sorduğunu sorgulamanın ilk adımıdır."
+        ],
+        "points": [
+          {
+            "title": "Kimlik",
+            "icon": "id",
+            "text": "Adın soyadın, doğum tarihin, T.C. kimlik numaran. Kimlik numarası resmî işlerde kullanılır; oyuna, çekilişe ya da yarışmaya gerekmez."
+          },
+          {
+            "title": "İletişim",
+            "icon": "call",
+            "text": "Telefon numaran, mail adresin, ailenin telefonu. Dolandırıcı aileni \"kargo ücreti\" ya da \"ödül vergisi\" diye bu numaradan arar."
+          },
+          {
+            "title": "Konum ve okul",
+            "icon": "pin",
+            "text": "Ev adresin, okulun, sınıfın. Seni çevrim dışı dünyada bulmayı kolaylaştırır."
+          },
+          {
+            "title": "Para",
+            "icon": "card",
+            "text": "Kart bilgileri, SMS onay kodu, banka şifresi. Bunlar kimseye verilmez, sonraki kartlarda neden olduğunu göreceksin."
+          }
+        ]
+      },
+      {
+        "id": "uc-kutu",
+        "type": "sort",
+        "title": "Hangi bilgi hangi kutuya girer?",
+        "hint": "",
+        "bins": [
+          { "label": "Yeşil kutu", "note": "Herkesle paylaşılabilir", "color": "green", "icon": "globe" },
+          { "label": "Sarı kutu", "note": "Düşünerek, tanıdıklarla", "color": "yellow", "icon": "users" },
+          { "label": "Kırmızı kutu", "note": "Kimseye verilmez", "color": "red", "icon": "lock" }
+        ],
+        "items": [
+          { "text": "En sevdiğin oyun", "icon": "gamepad", "bin": 0 },
+          { "text": "Okulunun adı", "icon": "school", "bin": 1 },
+          { "text": "Fotoğrafın", "icon": "camera", "bin": 1 },
+          { "text": "Ev adresin", "icon": "house", "bin": 2 },
+          { "text": "Şifren", "icon": "key", "bin": 2 },
+          { "text": "Telefonuna gelen onay kodu", "icon": "phone", "bin": 2 }
+        ],
+        "lenient": true,
+        "explain": "Sevdiğin oyunu herkes bilebilir. Okulunu ve fotoğrafını yalnızca tanıdığın kişilerle, düşünerek paylaşırsın. Ev adresin, şifren ve onay kodun ise kimseye verilmez; bunları isteyen bir oyun ya da çekiliş gerçek değildir."
+      },
+      {
+        "id": "ne-yapilabilir",
+        "type": "match",
+        "title": "Bu bilgi yanlış ele geçerse ne olabilir?",
+        "hint": "Soldaki her bilgiyi, kötü niyetli birinin onunla yapabileceğiyle eşleştir.",
+        "pairs": [
+          { "left": "Ev adresin ve okul çıkış saatin", "icon": "house", "right": "Seni okuldan eve kadar bulabilir" },
+          { "left": "T.C. kimlik numaran", "icon": "id", "right": "Seni arayıp polis ya da banka gibi davranarak kandırmaya çalışabilir" },
+          { "left": "Oyun hesabının şifresi", "icon": "key", "right": "Hesabına girip arkadaşlarına senmiş gibi yazabilir" },
+          { "left": "Telefonuna gelen onay kodu", "icon": "phone", "right": "Senin adına bir işlemi onaylayabilir" }
+        ],
+        "explain": "Her bilgi farklı bir kapıyı açar. Adres ve saat seni bulmaya, kimlik numarası seni arayıp bilgilerini sana söyleyerek güvenini kazanmaya, şifre ve onay kodu ise hesabına ya da ailenin parasına ulaşmaya yarar."
+      },
+      {
+        "id": "bosluk-doldur",
+        "type": "fill",
+        "title": "Boşlukları doldur",
+        "hint": "",
+        "sentences": [
+          "Seni tanımaya ya da bulmaya yarayan her bilgiye [kişisel veri] denir.",
+          "Tek tek masum görünen bilgiler [birleşince] hiç tanımadığın birinin seni bulmasına yeter.",
+          "Biri senden bilgi istediğinde kendine sor: Kim istiyor, [neden] istiyor, gerçekten gerekli mi?",
+          "Emin değilsen bilgiyi vermeden önce [ailene] ya da öğretmenine sor."
+        ],
+        "extra": ["hemen", "herkese", "şifre"],
+        "explain": "Kişisel veriyi korumak, tek tek bilgilerin bir araya gelince ne anlattığını görmekle başlar. Kim istiyor, neden istiyor, gerçekten gerekli mi? Emin değilsen önce ailene ya da öğretmenine danış."
+      },
+      {
+        "id": "kart-videosu",
+        "type": "video",
+        "title": "Ayşegül ve Ayça: bedava elmas",
+        "src": "/videolar/kartin-onu-arkasi-sms-kodu.mp4",
+        "duration": "1:33",
+        "question": {
+          "at": 64,
+          "question": "Bir oyun \"Bedava elmas!\" diyor ve kartın arkasındaki 3 rakamı istiyor. Ne yaparsın?",
+          "options": ["Yazarım, elmas bedava", "Yazmam, önce ailemle konuşurum", "Sadece iki rakamını yazarım"],
+          "answer": 1,
+          "explain": "Kartın arkasındaki 3 rakam CVV'dir; bilen biri kart elinde olmadan alışveriş yapabilir. Hiçbir oyun onu istemez, iki rakamı bile verilmez. Önce ailenle konuş."
+        }
+      },
+      {
+        "id": "kartin-onu-arkasi",
+        "type": "info",
+        "title": "Kartın önü, arkası ve SMS kodu",
+        "layout": "bankCard",
+        "paragraphs": [
+          "Bir banka kartıyla internetten alışveriş yapmak için üç şey yeter: kartın önündeki 16 haneli numara, son kullanma tarihi ve arkadaki 3 haneli güvenlik kodu (CVV). Bu üçünü bilen biri, kart elinde olmasa da alışveriş yapabilir.",
+          "Çoğu ödemede bir de karta bağlı telefona SMS onay kodu gelir. Bu kod \"Bu ödemeyi ben yapıyorum\" demektir; bir imza gibidir. Kodu söylediğin kişi, senin adına imza atmış olur."
+        ],
+        "points": [
+          { "title": "Kart numarası ve son kullanma tarihi", "icon": "card", "text": "Kartın önünde. Fotoğrafını bile paylaşma." },
+          { "title": "CVV", "icon": "flip", "text": "Kartın arkasındaki 3 hane. Hiçbir oyun, çekiliş ya da \"doğrulama\" bunu istemez." },
+          { "title": "SMS onay kodu", "icon": "message", "text": "İmzadır. Banka, mağaza, öğretmen, arkadaş; kim sorarsa sorsun söylenmez." },
+          { "title": "Kart ailenin ise", "icon": "users", "text": "Velinin izni olmadan hiçbir yere girilmez, \"sonra söylerim\" de olmaz." }
+        ]
+      },
+      {
+        "id": "cekilis-formu",
+        "type": "quiz",
+        "question": "Bir okul çekilişi formu hangisini istemez?",
+        "art": "gift",
+        "options": ["Adını ve sınıfını", "T.C. kimlik numaranı ve velinin kartının CVV'sini", "Hangi hediyeyi seçtiğini", "Hediyeyi okulda hangi gün alabileceğini"],
+        "answer": 1,
+        "explain": "Gerçek bir okul çekilişi en fazla adını ve sınıfını sorar, ödülü de okulda verir. Kimlik numarası ve kart bilgisi isteyen \"çekiliş\" ödül vermek için değil, bilgini ya da paranı almak için kurulmuştur."
+      },
+      {
+        "id": "hediye-maili",
+        "type": "clickFind",
+        "title": "Bu \"hediye\" mailindeki 4 şüpheli yeri bul",
+        "hint": "Mailde 4 şüpheli yer var. Bul bakalım.",
+        "mail": {
+          "sender": "Mega Kampanya",
+          "address": "hediye@mega-kampanya-odul.xyz",
+          "subject": "TEBRİKLER! Kablosuz kulaklık kazandınız 🎧",
+          "time": "16:05",
+          "paragraphs": [
+            "Merhaba,",
+            "Bu ayın şanslı kazananı sizsiniz! Kablosuz kulaklığınız depomuzda sizi bekliyor.",
+            "Hediyeniz tamamen ücretsizdir. Sadece kargo için 1 TL'lik kart doğrulaması yapmanız gerekir.",
+            "Formda kart numaranızı, son kullanma tarihini, CVV kodunu ve telefonunuza gelecek onay kodunu yazmanız yeterli.",
+            "Ödül 2 saat içinde alınmazsa sıradaki kişiye verilecektir."
+          ],
+          "button": "Hediyemi al",
+          "footer": "Mega Kampanya · Bu mail kampanyaya katılan kullanıcılara gönderilmiştir."
+        },
+        "spots": [
+          { "part": "address", "text": "\"mega-kampanya-odul.xyz\" bilinen bir mağazanın adresi değil. Hiç katılmadığın bir kampanyanın seni bulması da tuhaf.", "hint": "Gönderenin e-posta adresine harf harf bak: bu adresi daha önce gördün mü?" },
+          { "part": "p2", "text": "\"Ücretsiz ama 1 TL.\" Bedava bir şey için kart istenmez. 1 TL sadece bahane, asıl istenen kartın kendisi.", "hint": "\"Tamamen ücretsiz\" diyen cümlenin devamını oku: gerçekten hiçbir şey istemiyor mu?" },
+          { "part": "p3", "text": "CVV ve SMS onay kodu bir arada istenmiş. Bu ikisini alan kişi karttan istediği kadar harcama yapabilir.", "hint": "Formda hangi bilgilerin istendiğine bak. Bunlardan biri kimseye söylenmiyordu, hatırla." },
+          { "part": "p4", "text": "\"2 saat içinde\" diye acele ettiriyor. Acele, düşünüp birine sormanı engellemek içindir.", "hint": "Mail sana ne kadar zaman tanıyor? Acele ettiren cümleyi bul." }
+        ]
+      },
+      {
+        "id": "bir-tl",
+        "type": "quiz",
+        "question": "\"Bedava hediye, sadece 1 TL doğrulama\" diyen bir sayfa ne ister aslında?",
+        "art": "coin",
+        "options": ["Sadece 1 TL, başka bir şey değil", "Kartın bütün bilgilerini; sonra çok daha fazlasını çekebilir", "Kartın gerçek olup olmadığını kontrol etmek ister", "Sonraki alışverişinde sana indirim yapmak ister"],
+        "answer": 1,
+        "explain": "1 TL'yi çekmek için de kart numarası, son kullanma tarihi, CVV ve SMS kodu gerekir. Bunları alan kişi 1 TL ile durmaz. Gerçek mağazalar hediye vermek için kart \"doğrulamaz\"."
+      },
+      {
+        "id": "dur-sor-kontrol",
+        "type": "info",
+        "title": "Dur, sor, kontrol et",
+        "layout": "steps",
+        "paragraphs": [
+          "Para ya da bilgi isteyen bir mesaj, mail ya da sayfa gördüğünde acele etme. Dolandırıcının en büyük silahı, düşünmeden hareket etmendir."
+        ],
+        "points": [
+          { "title": "Dur", "icon": "stop", "text": "Formu doldurma, bağlantıya dokunma, kodu kimseye söyleme. Beklemekle hiçbir şey kaybetmezsin." },
+          { "title": "Sor", "icon": "ask", "text": "Ailene ya da öğretmenine göster. Kart ailenindir, karar da onlarındır." },
+          { "title": "Kontrol et", "icon": "search", "text": "Oyunun, okulun ya da mağazanın resmî uygulamasını kendin aç. Gerçek bir hediye ya da duyuru varsa orada da görürsün." },
+          { "title": "Bildir", "icon": "flag", "text": "Postam'da \"Oltalama olarak bildir\", Mesajlar'da \"Bildir ve engelle\". Kart bilgisi girildiyse aile hemen bankayı arar." }
+        ]
+      }
+    ]
+  }
+}

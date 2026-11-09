@@ -1,0 +1,143 @@
+{
+  "slug": "kodu-soran-arkadas",
+  "neighborhood": "hesap-kalesi",
+  "type": "SCENARIO",
+  "template": "MESSAGING",
+  "sortOrder": 1,
+  "status": "DRAFT",
+  "content": {
+    "meta": {
+      "name": "Kodu soran \"arkadaş\"",
+      "title": "Kodu bana atar mısın?",
+      "summary": "Tanıdık bir isim senden doğrulama kodu istiyor. Gerçekten o mu?",
+      "story": "Akşam telefonuna mesajlar düşüyor. Biri tanıdık bir isimle yazıyor ve acelesi var. Mesajlar'da kendin karar ver.",
+      "learn": [
+        { "title": "Doğrulama kodunun neden kimseyle paylaşılmadığını anlamak", "text": "Kod, hesabının son kilididir." },
+        { "title": "Tanıdık isimden gelen tuhaf isteği fark etmek", "text": "Hesabı ele geçirilen arkadaşın adıyla da yazılabilir." },
+        { "title": "Şüphelenince başka bir yoldan sormak", "text": "Telefonla ara ya da yüz yüze sor." }
+      ],
+      "difficulty": "MEDIUM",
+      "durationMin": 9
+    },
+    "reminders": [
+      "Tanıdık isim, tanıdık kişi demek değil: Hesabı çalınan bir arkadaşın adıyla da yazılabilir.",
+      "Doğrulama kodu sadece senin: Kimseyle paylaşma, arkadaşın bile olsa.",
+      "Şüphelenirsen başka yoldan sor: Arkadaşını arayarak ya da yüz yüze sor."
+    ],
+    "items": [
+      {
+        "id": "deniz",
+        "kind": "fake",
+        "sender": "Deniz",
+        "address": "@deniz.k07",
+        "subject": "",
+        "time": "20:14",
+        "body": "Selam! Yanlışlıkla senin numarana bir kod gönderdim, bana atar mısın? Acil lütfen, oyuna giremiyorum.",
+        "footer": "",
+        "link": null,
+        "attachment": null,
+        "signs": [
+          { "at": "sender", "text": "Deniz tanıdık ama hesabı ele geçirilmiş olabilir: hiç böyle yazmaz.", "quote": "Deniz" },
+          { "at": "text", "text": "\"Acil lütfen\" diye acele ettiriyor.", "quote": "Acil lütfen" },
+          { "at": "ask", "text": "Doğrulama kodunu istiyor; bu kod senin hesabının anahtarı.", "quote": "bana atar mısın?" }
+        ],
+        "why": "Tanıdık birinden gelse bile kod isteyen mesaj tipik hesap çalma yöntemi."
+      },
+      {
+        "id": "postam",
+        "kind": "real",
+        "sender": "Postam",
+        "address": "Postam",
+        "subject": "",
+        "time": "20:13",
+        "body": "Postam doğrulama kodun: 482 913. Bu kodu kimseyle paylaşma, Postam çalışanları bile istemez.",
+        "footer": "",
+        "link": null,
+        "attachment": null,
+        "signs": [],
+        "why": "Gerçek bir kod mesajı. Kodu sen istemediysen biri senin hesabına girmeye çalışıyor demektir."
+      },
+      {
+        "id": "annem",
+        "kind": "real",
+        "sender": "Annem",
+        "address": "+90 5** *** ** 41",
+        "subject": "",
+        "time": "18:02",
+        "body": "Akşam 7'de yemekteyiz, geç kalma.",
+        "footer": "",
+        "link": null,
+        "attachment": null,
+        "signs": [],
+        "why": "Kayıtlı numaradan, senden bir şey istemiyor."
+      },
+      {
+        "id": "servis",
+        "kind": "real",
+        "sender": "Okul Servis",
+        "address": "Servis grubu",
+        "subject": "",
+        "time": "Dün",
+        "body": "Yarın sabah servis 07.40'ta kalkıyor.",
+        "footer": "",
+        "link": null,
+        "attachment": null,
+        "signs": [],
+        "why": "Bilinen grup, sadece bilgi veriyor."
+      }
+    ],
+    "trap": {
+      "url": "",
+      "title": "",
+      "text": "",
+      "ask": "Doğrulama kodu (6 hane)",
+      "secret": "482 913",
+      "kind": "account",
+      "realLife": "Kodu alan kişi Postam hesabına girer, şifreni değiştirir ve arkadaşlarına senin adınla aynı mesajı gönderir.",
+      "actions": [
+        "Başka bir cihazdan Postam şifreni hemen değiştirirdin.",
+        "İki adımlı doğrulamayı açardın.",
+        "Deniz'i arayıp hesabının çalındığını söylerdin."
+      ]
+    },
+    "tasks": [
+      { "id": "ac", "type": "action", "text": "Mesajlarını aç", "options": [], "right": "", "why": "" },
+      {
+        "id": "incele",
+        "type": "review",
+        "text": "Mesajlara bak, şüpheli olanı bildir ve engelle",
+        "options": []
+      },
+      {
+        "id": "deniz-sorusu",
+        "type": "question",
+        "text": "Gerçekten Deniz mi, nasıl emin olursun?",
+        "options": [
+          { "text": "Mesajla sorarım: Gerçekten sen misin?", "points": 0 },
+          { "text": "Deniz'i telefonla arar ya da yüz yüze sorarım", "points": 2 },
+          { "text": "Kodu atarım, arkadaşım sonuçta", "points": 0 }
+        ],
+        "right": "Başka bir yoldan, telefonla ya da yüz yüze sormak.",
+        "why": "Hesap ele geçirildiyse mesajla sorduğunda yine saldırgan cevap verir."
+      },
+      {
+        "id": "kod-sorusu",
+        "type": "question",
+        "text": "Postam'dan gelen kod mesajı için ne düşünüyorsun?",
+        "options": [
+          { "text": "Gerçek, ama kodu kimseye vermem", "points": 1 },
+          { "text": "Sahte, silerim", "points": 0 },
+          { "text": "Kodu Deniz'e iletirim", "points": 0 }
+        ],
+        "right": "Gerçek bir mesaj; kodu kimseyle paylaşmamak.",
+        "why": "Kodu sen istemediysen biri senin hesabına girmeye çalışıyordur."
+      }
+    ],
+    "tips": [
+      { "text": "Kod isteyen mesaja cevap yazma, önce kişiyi başka bir yoldan ara.", "when": "engaged" },
+      { "text": "Doğrulama kodunu kimseyle paylaşma; paylaştıysan hemen şifreni değiştir.", "when": "hacked" },
+      { "text": "Tanıdık isimden gelen tuhaf mesajlara da dikkat: hesap çalınmış olabilir.", "when": "missedFake" },
+      { "text": "Gerçek mesajları tanı: senden bir şey istemiyorsa büyük ihtimalle güvenli.", "when": "reportedReal" }
+    ]
+  }
+}

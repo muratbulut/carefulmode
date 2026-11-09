@@ -1,0 +1,105 @@
+# "Site ayakta mı" izlemesi: canlı adresin sağlık ucuna (/api/health) bakar.
+# /api/health veritabanına da bakar; veritabanına ulaşılamazsa 503 döner ve bu da erişilemiyor
+# sayılır. Kısa kesintilerde (yayın sırasında uygulamanın yeniden başlaması gibi) alarm
+# çalmasın diye üç kez, yarımşar dakika arayla denenir.
+#
+# Site erişilemezse depoda tek bir "Site erişilemiyor" konusu (issue) açılır; konu zaten açıksa
+# saatte en çok bir "hâlâ erişilemiyor" yorumu eklenir (her 10 dakikada bir e-posta gitmesin).
+# Site dönünce konuya kesinti süresi yazılır ve konu kapatılır. Konu ve yorumlar, GitHub
+# bildirimleriyle depo sahibine e-posta olarak gider. İş kendisi kırmızı bitmez: alarm konudur
+# (kırmızı zamanlanmış iş, her 10 dakikada bir ayrıca e-posta gönderirdi).
+#
+# Sunucuya bağlanmaz, sır kullanmaz; yalnızca herkese açık adresi okur.
+# Ayrıntı: docker/server/README.md (İzleme).
+name: Site izleme
+
+# Zamanlama kapalı, yalnızca elle çalışır: asıl izleme UptimeRobot (Murat'ın kararı, 12 Ekim).
+# Depo özel (private) olduğu için her koşu Actions dakikasından düşer; 10 dakikada bir koşu ayda
+# ~4.500 dakika eder, ücretsiz sınırı (2.000) aşar ve CI ile yayın da durur.
+on:
+  workflow_dispatch:
+
+# Yalnızca konu açıp kapatmak ve yorum yazmak.
+permissions:
+  issues: write
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+env:
+  HEALTH_URL: https://bitirme.muratbulut.net/api/health
+  ISSUE_TITLE: Site erişilemiyor
+
+jobs:
+  check:
+    name: Sağlık kontrolü
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: /api/health
+        id: health
+        run: |
+          detail=""
+          for attempt in 1 2 3; do
+            code=$(curl -sS -o body.json -w '%{http_code}' --max-time 20 \
+              -H 'Cache-Control: no-cache' -A 'CarefulMode-uptime (GitHub Actions)' "$HEALTH_URL" 2> curl.err) || code=000
+            if [ "$code" = 200 ] && grep -q '"status":"ok"' body.json; then
+              echo "Deneme $attempt: site ayakta."
+              echo "up=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            # Ayrıntı yalnızca durum kodu, sağlık ucunun durum alanları ya da curl'ün hata
+            # cümlesi; yanıtın kendisi konuya yazılmaz.
+            if [ "$code" = 000 ]; then
+              detail="bağlantı yok ($(head -c 150 curl.err | tr -d '\r\n'))"
+            else
+              fields=$({ grep -oE '"(status|database)":"[a-z]+"' body.json || true; } | tr -d '"' | paste -sd ' ' -)
+              detail="HTTP $code${fields:+ ($fields)}"
+            fi
+            echo "Deneme $attempt: $detail"
+            [ "$attempt" = 3 ] || sleep 30
+          done
+          echo "::warning::Site erişilemiyor: $detail"
+          echo "up=false" >> "$GITHUB_OUTPUT"
+          echo "detail=$detail" >> "$GITHUB_OUTPUT"
+
+      - name: Konu (issue)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+          UP: ${{ steps.health.outputs.up }}
+          DETAIL: ${{ steps.health.outputs.detail }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          now=$(date -u '+%Y-%m-%d %H:%M UTC')
+          issue=$(gh issue list --state open --limit 100 --json number,title \
+            --jq '[.[] | select(.title == env.ISSUE_TITLE)][0].number // empty')
+
+          if [ "$UP" = true ]; then
+            [ -n "$issue" ] || exit 0
+            opened=$(gh issue view "$issue" --json createdAt --jq .createdAt)
+            minutes=$((($(date +%s) - $(date -d "$opened" +%s)) / 60))
+            gh issue comment "$issue" --body "Site yeniden erişilebilir ($now). Kesinti en az $minutes dakika sürdü (konunun açılışından bu yana)."
+            gh issue close "$issue" --reason completed
+            exit 0
+          fi
+
+          if [ -z "$issue" ]; then
+            gh issue create --title "$ISSUE_TITLE" --body "@$OWNER $HEALTH_URL $now itibarıyla üç denemede de cevap vermedi.
+
+          Son durum: $DETAIL
+          Kontrol: $RUN_URL
+
+          Bakılacaklar: Actions → Yayın → Run workflow → inspect (sunucu ve konteyner durumu); 503 ise veritabanı. Site dönünce bu konu kendiliğinden kapanır."
+            exit 0
+          fi
+
+          # Konu açık: son yorumdan (yoksa açılıştan) bu yana bir saat geçtiyse hatırlat.
+          last=$(gh issue view "$issue" --json createdAt,comments --jq '(.comments | last | .createdAt) // .createdAt')
+          if [ $(($(date +%s) - $(date -d "$last" +%s))) -ge 3600 ]; then
+            gh issue comment "$issue" --body "Hâlâ erişilemiyor ($now). Son durum: $DETAIL · $RUN_URL"
+          else
+            echo "Konu #$issue açık; son bildirimden bu yana bir saat geçmedi, yorum eklenmedi."
+          fi

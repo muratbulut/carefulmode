@@ -1,0 +1,325 @@
+{
+  "slug": "eski-telefonunu-sat",
+  "neighborhood": "para-carsisi",
+  "type": "SCENARIO",
+  "template": "MESSAGING",
+  "sortOrder": 2,
+  "status": "DRAFT",
+  "content": {
+    "meta": {
+      "name": "Eski telefonunu sat",
+      "title": "Para sana mı geliyor, senden mi gidiyor?",
+      "summary": "Baban eski telefonunun ilanını koydu, satışı sana bıraktı. Mesajlar'a iki alıcı yazıyor. Parayı doğru yerden al, telefonu da hazırlamadan gönderme.",
+      "story": "Baban eski telefonunu İkinci El Pazarı'na 4.000 TL'ye koydu ve seni arıyor: satışı sen halledeceksin, para gelince yeni telefonuna eklenecek. Mesajlar'a alıcılar yazmaya başladı. Biri ödemeyi uygulamada yapmış, biri parayı göndermek için senden bir \"onay\" istiyor. Kargoya vermeden önce telefonu da hazırlaman gerekiyor; içinde fotoğrafların ve hesapların var.",
+      "learn": [
+        {
+          "title": "Satıcı onay vermez",
+          "text": "Parayı almak için kart bilgisi, kod ya da ödeme isteği onayı gerekmez. Ödeme isteğini onaylamak para göndermektir."
+        },
+        {
+          "title": "Ödeme pazar yerinde kalır",
+          "text": "Parayı pazar yerinin kendi sisteminde gör; seni başka bir uygulamaya çeken alıcıya dikkat et."
+        },
+        {
+          "title": "Telefon içindekilerle gitmez",
+          "text": "Göndermeden önce yedeğini al, hesaplarından çık, telefonu sıfırla."
+        }
+      ],
+      "difficulty": "MEDIUM",
+      "durationMin": 8
+    },
+    "reminders": [
+      "Kim yazıyor? Konuşmayı pazar yerinin dışına taşıyan alıcıya dikkat et.",
+      "Ödeme isteğini oku: para sana mı geliyor, senden mi gidiyor?",
+      "Kargodan önce düşün: telefonun içinde hesapların ve fotoğrafların var."
+    ],
+    "items": [
+      {
+        "id": "selin",
+        "kind": "fake",
+        "sender": "Selin K.",
+        "address": "+90 5** *** ** 17",
+        "subject": "",
+        "time": "19:48",
+        "body": "Merhaba, ilanındaki telefon duruyor mu? 4.000 TL'ye hemen alıyorum, pazarlık yok.\n\nNumaranı ilandan aldım, buradan yazışalım daha hızlı.\n\nParayı gönderdim ama Bankam senin onayını bekliyor. Aşağıdaki ödeme isteğini **onayla**, para hesabına geçsin. Acele et, kargoyu bugün vermem lazım.",
+        "footer": "",
+        "link": {
+          "url": "bankam.com.tr/odeme-istegi/48213",
+          "text": "Ödeme isteğini aç"
+        },
+        "attachment": null,
+        "signs": [
+          {
+            "at": "sender",
+            "text": "Numaranı ilandan alıp konuşmayı İkinci El Pazarı'nın dışına, Mesajlar'a taşıdı.",
+            "quote": "buradan yazışalım"
+          },
+          {
+            "at": "ask",
+            "text": "Parayı almak için onay istiyor. Satıcı para almak için hiçbir şey onaylamaz; ödeme isteği senin hesabından para çıkarır.",
+            "quote": "ödeme isteğini onayla"
+          },
+          {
+            "at": "text",
+            "text": "\"Acele et, kargoyu bugün vermem lazım\" diye acele ettiriyor.",
+            "quote": "Acele et"
+          }
+        ],
+        "why": "Gerçek alıcı ödemeyi İkinci El Pazarı'nda yapar, satıcıdan hiçbir onay istemez. Selin'in \"ödeme isteği\" parayı sana göndermiyordu, senin hesabından 4.000 TL istiyordu.",
+        "request": {
+          "bank": "Bankam",
+          "from": "Selin K.",
+          "amount": "4.000 TL",
+          "refused": "Bankam: İstek reddedildi, hesabından para çıkmadı. Satıcı parayı almak için hiçbir isteği onaylamaz."
+        }
+      },
+      {
+        "id": "pazar",
+        "kind": "real",
+        "sender": "İkinci El Pazarı",
+        "address": "Bildirim",
+        "subject": "",
+        "time": "19:31",
+        "body": "Tebrikler, ilanın satıldı! **Emre T.** eski telefonunu 4.000 TL'ye satın aldı.\n\nÖdeme bizde güvende. Kargoya ver, alıcı teslim alınca para hesabına geçecek.",
+        "footer": "",
+        "link": {
+          "url": "ikincielpazari.com.tr/siparis/77310",
+          "text": "Siparişi gör"
+        },
+        "attachment": null,
+        "signs": [],
+        "why": "Pazar yerinin kendi bildirimi. Ödeme platformda duruyor; senden kart bilgisi ya da onay istemiyor.",
+        "order": {
+          "buyer": "Emre T."
+        }
+      },
+      {
+        "id": "emre",
+        "kind": "real",
+        "sender": "Emre T.",
+        "address": "İkinci El Pazarı · alıcı",
+        "subject": "",
+        "time": "19:33",
+        "body": "Merhaba, telefonu İkinci El Pazarı'ndan satın aldım, ödemeyi uygulamada yaptım.\n\nKargoya verince haber verir misin? Teşekkürler!",
+        "footer": "",
+        "link": null,
+        "attachment": null,
+        "signs": [],
+        "why": "Pazar yerinin içinden yazıyor, ödemeyi orada yapmış ve senden hiçbir bilgi ya da onay istemiyor."
+      },
+      {
+        "id": "babam",
+        "kind": "real",
+        "sender": "Babam",
+        "address": "+90 5** *** ** 08",
+        "subject": "",
+        "time": "18:55",
+        "body": "İlanı yayına aldım, fotoğraflar güzel çıktı. Kargo için yarın sabah ben de seninle gelirim.",
+        "footer": "",
+        "link": null,
+        "attachment": null,
+        "signs": [],
+        "why": "Babanın kayıtlı numarası; senden bir şey istemiyor."
+      }
+    ],
+    "trap": {
+      "url": "",
+      "title": "",
+      "text": "",
+      "ask": "Ödeme isteği onayı",
+      "secret": "",
+      "kind": "financial",
+      "account": "",
+      "realLife": "Ödeme isteğini onaylamak parayı almak değil, göndermektir. Dolandırıcı alıcı gibi davranıp satıcıdan \"onay\" ister; onay verilince para satıcının hesabından çıkar. Banka uygulamasından onaylanan bu ödeme çoğu zaman geri alınamaz.",
+      "actions": [
+        "Hemen ailene söyle; bankayı birlikte arayıp işleme itiraz edin.",
+        "Mesajı Mesajlar'da bildir ve engelle; pazar yerine de şikâyet et.",
+        "Bir dahaki satışta parayı yalnızca pazar yerinin kendi ödeme sistemiyle al."
+      ],
+      "alarm": {
+        "line": "Hesabından 4.000 TL çıktı.",
+        "notifications": [
+          {
+            "title": "Ödeme isteği onaylandı",
+            "text": "Bankam · Selin K. · 4.000 TL"
+          },
+          {
+            "title": "Hesabından 4.000 TL çıktı",
+            "text": "Bankam · Kalan bakiye 250 TL"
+          },
+          {
+            "title": "Selin K. seni engelledi",
+            "text": "Mesajlar"
+          }
+        ]
+      }
+    },
+    "tasks": [
+      {
+        "id": "ac",
+        "type": "action",
+        "text": "Mesajlar'ı aç, alıcıların mesajlarına göz at",
+        "options": [],
+        "right": "",
+        "why": ""
+      },
+      {
+        "id": "gorev",
+        "type": "mission",
+        "text": "Telefonu doğru alıcıya sat",
+        "options": [],
+        "right": "Ödemeyi İkinci El Pazarı'nda yapan Emre'nin siparişinden, telefonu yedekleyip hesaplardan çıkarak ve sıfırlayarak kargoya vermek.",
+        "why": "Para pazar yerinin içinde güvendeydi; satıcının ayrıca bir şey onaylamasına gerek yoktu. Sıfırlanmayan telefonla fotoğrafların ve açık hesapların da alıcıya giderdi."
+      },
+      {
+        "id": "incele",
+        "type": "review",
+        "text": "Mesajlarını incele, şüpheli bulduklarını bildir",
+        "options": [],
+        "right": "",
+        "why": ""
+      },
+      {
+        "id": "onay",
+        "type": "question",
+        "text": "Bir alıcı \"Parayı gönderdim, almak için bankadaki ödeme isteğini onayla\" diyor. Ne yaparsın?",
+        "options": [
+          {
+            "text": "Onaylamam; parayı pazar yerinde beklerim, alıcıyı bildiririm",
+            "points": 1
+          },
+          {
+            "text": "Onaylarım, para bana geçer",
+            "points": 0
+          },
+          {
+            "text": "Önce 1 TL'lik bir istekle denerim",
+            "points": 0
+          },
+          {
+            "text": "Kart bilgimi yazarım, onaylamaktan kolay",
+            "points": 0
+          }
+        ],
+        "right": "Onaylamamak, parayı pazar yerinde beklemek ve alıcıyı bildirmek.",
+        "why": "Ödeme isteği senin hesabından para çıkarır. Satıcı olarak parayı almak için hiçbir şeyi onaylaman, kart bilgisi ya da kod vermen gerekmez."
+      },
+      {
+        "id": "sifirla",
+        "type": "question",
+        "text": "Telefonunu kargoya vermeden önce ne yaparsın?",
+        "options": [
+          {
+            "text": "Yedeğimi alır, hesaplarımdan çıkar, telefonu fabrika ayarlarına sıfırlarım",
+            "points": 1
+          },
+          {
+            "text": "Fotoğrafları silerim, yeter",
+            "points": 0
+          },
+          {
+            "text": "Hiçbir şey, alıcı beni tanımıyor",
+            "points": 0
+          },
+          {
+            "text": "Ekran kilidini kaldırırım ki alıcı rahat kullansın",
+            "points": 0
+          }
+        ],
+        "right": "Yedeği almak, hesaplardan çıkmak ve telefonu sıfırlamak.",
+        "why": "Yalnızca fotoğrafları silmek yetmez: açık kalan Postam, oyun ve sosyal medya hesapları, kayıtlı şifreler ve mesajlar telefonla birlikte gider. Hesaplardan çıkıp sıfırlayınca telefonun yeni sahibine hiçbir şeyin kalmaz."
+      }
+    ],
+    "tips": [
+      {
+        "text": "Ödeme isteğini açınca \"İsteyen\" ve \"Ödenecek hesap\" satırlarını oku: para senden mi gidiyor?",
+        "when": "engaged"
+      },
+      {
+        "text": "Satıcı parayı almak için hiçbir isteği onaylamaz; \"onayla da para geçsin\" diyen alıcı dolandırıcıdır.",
+        "when": "hacked"
+      },
+      {
+        "text": "Konuşmayı pazar yerinin dışına taşıyıp onay isteyen alıcıyı bildir ve engelle.",
+        "when": "missedFake"
+      },
+      {
+        "text": "Emre ödemeyi uygulamada yapmıştı ve senden bir şey istemiyordu; gerçek alıcı böyle yazar.",
+        "when": "reportedReal"
+      },
+      {
+        "text": "Telefonu satmadan önce: yedek al, hesaplardan çık, sıfırla.",
+        "when": "always"
+      }
+    ],
+    "mission": {
+      "caller": "Babam",
+      "look": "father",
+      "owner": "Babanın",
+      "lines": [
+        "Selam, eski telefonunun ilanını İkinci El Pazarı'na koydum.",
+        "4.000 TL yazdım, alıcılar sana yazacak. Satışı sen hallet, tamam mı?",
+        "Para gelince yeni telefonuna ekleriz.",
+        "Ama kargoya vermeden önce telefonu sıfırla, içinde senin her şeyin var."
+      ],
+      "title": "Eski telefonunu sat",
+      "points": [
+        "İlanından **4.000 TL**'ye sat",
+        "Parayı **İkinci El Pazarı**'ndan al",
+        "Kargodan önce telefonu **hazırla ve sıfırla**"
+      ],
+      "pointIcons": [
+        "phone",
+        "tag",
+        "lock"
+      ],
+      "accept": "Tamam baba, hallederim",
+      "refuse": "",
+      "sale": {
+        "product": "Eski telefonun · 128 GB · Mavi",
+        "price": "4.000 TL",
+        "platform": "İkinci El Pazarı",
+        "icon": "phone",
+        "prep": [
+          "Fotoğraflarını yedekle",
+          "Postam ve oyun hesaplarından çıkış yap",
+          "Telefonu fabrika ayarlarına sıfırla"
+        ],
+        "unprepared": "Emre T.: \"Telefon geldi, teşekkürler! Ama içinde fotoğrafların duruyor, Postam'ın da açık. Ne yapayım?\""
+      },
+      "code": "",
+      "good": [
+        "İkinci El Pazarı'ndan bildirim geldi: Emre telefonu teslim almış!",
+        "4.000 TL hesabına geçti, yeni telefonuna ekliyoruz.",
+        "Telefonu da sıfırlamışsın, aferin sana."
+      ],
+      "goodReported": "O Selin denen kişiyi de bildirmişsin, çok iyi yapmışsın.",
+      "goodTitle": "Telefon satıldı, 4.000 TL geldi",
+      "done": "Telefonu sıfırlayıp İkinci El Pazarı'ndaki gerçek alıcıya gönderdin.",
+      "bad": [
+        "Bankadan mesaj geldi: hesabından 4.000 TL çıkmış!",
+        "Sana para gelecekti, nasıl oldu da senden gitti?",
+        "Hemen bankayı arıyorum, sen de o kişiyi bildir."
+      ],
+      "voice": {
+        "lines": [
+          "/sesler/eski-telefonunu-sat/acilis-1.mp3",
+          "/sesler/eski-telefonunu-sat/acilis-2.mp3",
+          "/sesler/eski-telefonunu-sat/acilis-3.mp3",
+          "/sesler/eski-telefonunu-sat/acilis-4.mp3"
+        ],
+        "good": [
+          "/sesler/eski-telefonunu-sat/iyi-1.mp3",
+          "/sesler/eski-telefonunu-sat/iyi-2.mp3",
+          ""
+        ],
+        "goodReported": "/sesler/eski-telefonunu-sat/iyi-bildirdi.mp3",
+        "bad": [
+          "/sesler/eski-telefonunu-sat/kotu-1.mp3",
+          "/sesler/eski-telefonunu-sat/kotu-2.mp3",
+          "/sesler/eski-telefonunu-sat/kotu-3.mp3"
+        ]
+      }
+    }
+  }
+}

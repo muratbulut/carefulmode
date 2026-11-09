@@ -1,0 +1,23 @@
+# CyberGuard: veritabanının gece yedeği (docker/server/backup.sh nightly).
+# docker/server/install-backup-timer.sh kurar; __...__ yerleri kurulumda doldurulur.
+# Ayrıntı: docker/server/README.md (Yedekleme).
+
+[Unit]
+Description=CyberGuard veritabanı yedeği (gece)
+Wants=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+# Yayın kullanıcısı: yayın ve yedek klasörlerinin sahibi. Docker'ı, yayındaki gibi, şifresiz
+# sudo ile çalıştırır (bu yüzden NoNewPrivileges gibi kısıtlar konmadı).
+User=__USER__
+Group=__GROUP__
+UMask=0077
+WorkingDirectory=__DEPLOY_DIR__
+ExecStart=/bin/bash __DEPLOY_DIR__/docker/server/backup.sh nightly
+# Aynı sunucudaki diğer işlerin önüne geçmesin.
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+TimeoutStartSec=1h

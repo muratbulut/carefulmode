@@ -1,0 +1,181 @@
+/*
+ * Kütüphane bilgisayarı sahnesi (tuvalde lab.html). Sınıflar sahnenin kök sınıfıyla başlar; ortak
+ * sınıfları (scene.css) ezen kurallar kök sınıfın altında yazılır, böylece seçici daha güçlüdür ve
+ * dosyaların yüklenme sırası önemsizdir.
+ */
+
+/* Arkadaki raf: aşağıya doğru kaybolur (maske yalnızca saydamlık için; renk önemsiz). */
+.hs-library-shelf {
+  position: absolute;
+  top: 46px;
+  right: 0;
+  left: 0;
+  height: 184px;
+  opacity: 0.55;
+  mask-image: linear-gradient(180deg, var(--canvas) 40%, transparent);
+}
+
+.hs-library-shelf svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hs-library-teal {
+  fill: var(--scene-deep-teal);
+}
+
+.hs-library-navy {
+  fill: var(--scene-deep-navy);
+}
+
+.hs-library-olive {
+  fill: var(--scene-deep-olive);
+}
+
+.hs-library-slate {
+  fill: var(--scene-deep-slate);
+}
+
+.hs-library-plum {
+  fill: var(--scene-deep-plum);
+}
+
+.hs-library-steel {
+  fill: var(--scene-deep-steel);
+}
+
+.hs-library-indigo {
+  fill: var(--scene-deep-indigo);
+}
+
+.hs-library .hs-library-laptop {
+  top: 108px;
+  left: 22px;
+  width: 312px;
+}
+
+.hs-library .hs-library-screen {
+  height: 226px;
+}
+
+.hs-library-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--card);
+  background: var(--surface-raised);
+  color: var(--fg-3);
+  font-size: 12px;
+}
+
+.hs-library-top b {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--fg-2);
+  font-weight: 600;
+}
+
+.hs-library-top b svg {
+  width: 14px;
+  height: 14px;
+}
+
+.hs-library-clock {
+  font-size: 12px;
+}
+
+/* Kalan süre çubuğu: döngünün ilk yarısında sıfıra iner. */
+.hs-library-time {
+  height: 4px;
+  background: var(--card);
+}
+
+.hs-library-time i {
+  display: block;
+  height: 100%;
+  background: var(--warning);
+  animation: hs-library-time 10s linear infinite;
+}
+
+.hs-library-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 13px 14px;
+}
+
+.hs-library-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hs-library .hs-library-avatar {
+  background: var(--success);
+}
+
+.hs-library-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.hs-library .hs-library-rows svg {
+  color: var(--fg-3);
+}
+
+.hs-library .hs-library-sign-out {
+  align-self: flex-start;
+}
+
+.hs-library .hs-library-log {
+  top: 150px;
+  right: 0;
+  width: 178px;
+}
+
+.hs-library-entry {
+  display: flex;
+  justify-content: space-between;
+  color: var(--fg-2);
+  font-size: 13px;
+}
+
+.hs-library-entry span:first-child {
+  color: var(--fg-4);
+  font-size: 12px;
+}
+
+.hs-library-me b {
+  color: var(--fg);
+}
+
+.hs-library-next {
+  color: var(--fg-3);
+}
+
+.hs-library-next b {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hs-library-next svg {
+  width: 13px;
+  height: 13px;
+}
+
+@keyframes hs-library-time {
+  0% {
+    width: 28%;
+  }
+  50%,
+  100% {
+    width: 0;
+  }
+}

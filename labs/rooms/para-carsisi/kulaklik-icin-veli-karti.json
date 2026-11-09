@@ -1,0 +1,331 @@
+{
+  "slug": "kulaklik-icin-veli-karti",
+  "neighborhood": "para-carsisi",
+  "type": "SCENARIO",
+  "template": "INBOX",
+  "sortOrder": 1,
+  "status": "PUBLISHED",
+  "content": {
+    "meta": {
+      "name": "Kulaklık için veli kartı",
+      "title": "Aynı mağaza, farklı adres",
+      "summary": "Annen Ege'nin doğum günü hediyesini almanı istedi, kartı da sende. Gelen kutunda iki tane TeknoPazar maili var. Hangisinden alırsın?",
+      "story": "Yarın kardeşin Ege'nin doğum günü. Annen seni arıyor: TeknoPazar'dan ona kablosuz kulaklık almanı istiyor, 1.250 TL'yi geçmemen şartıyla. Kartının bilgileri sende, onay kodu ise annenin telefonuna gelecek. Postam'da TeknoPazar'dan iki mail var, ikisi de aynı kulaklığı aynı fiyata gösteriyor. Görevi yaparken dikkatli ol: bir tanesi gerçek değil.",
+      "learn": [
+        {
+          "title": "Aynı görünen iki mail",
+          "text": "Logo, metin ve fiyat kopyalanabilir. Gerçeği ayıran gönderen adresi ve sitenin adresidir."
+        },
+        {
+          "title": "Onay kodu bir imzadır",
+          "text": "SMS'teki tutar ve mağaza adı beklediğin gibi değilse kod kimseye yazılmaz."
+        },
+        {
+          "title": "Veli kartı, velinin kararıdır",
+          "text": "Ailenin kartını yalnızca onların izniyle ve onların bildiği yerde kullanırsın."
+        }
+      ],
+      "difficulty": "MEDIUM",
+      "durationMin": 8
+    },
+    "reminders": [
+      "Gönderene bak: @ işaretinden sonrasını oku. Mağazanın gerçek adresi ne?",
+      "Adres çubuğuna bak: ödeme sayfası hangi sitede açıldı?",
+      "SMS'i oku: kodla birlikte gelen tutar ve mağaza adı doğru mu?"
+    ],
+    "items": [
+      {
+        "id": "teknopazar-sahte",
+        "kind": "fake",
+        "sender": "TeknoPazar",
+        "address": "kampanya@teknopazar-gercek-tr.com",
+        "subject": "Favorindeki kulaklık stokta: 1.199 TL",
+        "time": "19:42",
+        "body": "Merhaba,\n\nFavorilerine eklediğin **kablosuz kulaklık** stoklarımıza geri geldi. Fiyatı **1.199 TL**.\n\nStoklar sınırlı, siparişini bugün verirsen yarın kargoda.",
+        "footer": "TeknoPazar · Bu maili favorilerin için aldın.",
+        "link": {
+          "url": "teknopazar-gercek-tr.com/urun/kablosuz-kulaklik",
+          "text": "Ürüne git"
+        },
+        "attachment": null,
+        "signs": [
+          {
+            "at": "sender",
+            "text": "Gerçek mağazanın adresi teknopazar.com.tr. Bu mail teknopazar-gercek-tr.com'dan geliyor; gerçek bir mağaza adresine \"gerçek\" yazmaz.",
+            "quote": "teknopazar-gercek-tr.com"
+          },
+          {
+            "at": "link",
+            "text": "\"Ürüne git\" mağazanın kendi sitesine değil, benzer adlı başka bir siteye gidiyor.",
+            "quote": "Ürüne git"
+          },
+          {
+            "at": "text",
+            "text": "Ödeme yapınca annene gelen kodda 1.199 TL değil \"TKNPZR*ODEME, 4.850 TL\" yazıyor.",
+            "quote": "1.199 TL"
+          }
+        ],
+        "why": "Mail, metni ve fiyatı gerçeğinin aynısı; tek fark gönderen adresi. Bağlantı da benzer adlı başka bir siteye gidiyor ve oradaki ödeme, annenin telefonuna bambaşka bir tutar için onay kodu gönderiyor.",
+        "payment": {
+          "shop": "TKNPZR*ODEME",
+          "amount": "4.850 TL",
+          "note": "Sen 1.199 TL demiştin?",
+          "refused": "İyi ki yazmadın! Kartı hemen kapattırıyorum, kart bilgileri o siteye gitti."
+        }
+      },
+      {
+        "id": "teknopazar",
+        "kind": "real",
+        "sender": "TeknoPazar",
+        "address": "kampanya@teknopazar.com.tr",
+        "subject": "Favorindeki kulaklık stokta: 1.199 TL",
+        "time": "18:10",
+        "body": "Merhaba,\n\nFavorilerine eklediğin **kablosuz kulaklık** stoklarımıza geri geldi. Fiyatı **1.199 TL**.\n\nStoklar sınırlı, siparişini bugün verirsen yarın kargoda.",
+        "footer": "TeknoPazar · Bu maili favorilerin için aldın.",
+        "link": {
+          "url": "teknopazar.com.tr/urun/kablosuz-kulaklik",
+          "text": "Ürüne git"
+        },
+        "attachment": null,
+        "signs": [],
+        "why": "Mağazanın kendi adresinden geliyor ve bağlantısı kendi sitesine gidiyor. Ödeme yapınca annene gelen kodda da doğru mağaza ve doğru tutar yazıyor.",
+        "payment": {
+          "shop": "TeknoPazar",
+          "amount": "1.199 TL",
+          "note": "Tutar doğru, yazabilirsin.",
+          "refused": "Tutar doğruydu aslında, ama sorman iyi oldu. Kodu sana söylüyorum."
+        }
+      },
+      {
+        "id": "annem",
+        "kind": "real",
+        "sender": "Annem",
+        "address": "ayse.k@postam.com",
+        "subject": "Ege'nin hediyesi",
+        "time": "17:30",
+        "body": "Canım, telefonda konuştuğumuz gibi Ege'nin kulaklığını TeknoPazar'dan alırsın. Kartımın bilgileri sende. Onay kodu bana gelecek.\n\nÖptüm, annen",
+        "footer": "",
+        "link": null,
+        "attachment": null,
+        "signs": [],
+        "why": "Annenin bildiğin adresi. Kart bilgisini mailde açık yazmıyor, senden bir şey istemiyor."
+      },
+      {
+        "id": "okul",
+        "kind": "real",
+        "sender": "Okul Duyuru",
+        "address": "duyuru@ornek-ortaokulu.k12.tr",
+        "subject": "Dijital güvenlik haftası",
+        "time": "16:05",
+        "body": "Sevgili öğrencilerimiz,\n\nÖnümüzdeki hafta dijital güvenlik haftası. Perşembe 3. derste internetten alışveriş tuzakları üzerine kısa bir sunum yapılacak.",
+        "footer": "",
+        "link": null,
+        "attachment": null,
+        "signs": [],
+        "why": "Okulun bilinen adresi, link yok, senden bir şey istemiyor."
+      }
+    ],
+    "trap": {
+      "url": "",
+      "title": "",
+      "text": "",
+      "ask": "Kart bilgisi ve onay kodu",
+      "secret": "",
+      "kind": "financial",
+      "account": "",
+      "realLife": "Kart bilgisi ve onay kodu bir araya gelince dolandırıcı yalnızca senin gördüğün tutarı değil, kartın limiti kadar harcama yapabilir. Kart annenin olduğu için para ailenin hesabından gider; bankaya itiraz etmek günler sürer, bazen para geri alınamaz.",
+      "actions": [
+        "Hemen veline söyle: kartı bankanın uygulamasından ya da müşteri hizmetlerinden kapattırsın.",
+        "Bankaya \"bu harcamayı ben yapmadım\" diye itiraz edilsin; ne kadar erken, o kadar iyi.",
+        "Sahte maili Postam'da \"Oltalama\" diye bildir ve sil."
+      ],
+      "alarm": {
+        "line": "Annenin kartından 4.850 TL çekildi.",
+        "notifications": [
+          {
+            "title": "Annenin kartından 2.400 TL çekildi",
+            "text": "Bankam · TKN*PAY"
+          },
+          {
+            "title": "Annenin kartından 2.450 TL çekildi",
+            "text": "Bankam · Online alışveriş"
+          },
+          {
+            "title": "Kart limiti doldu",
+            "text": "Bankam · Toplam 4.850 TL"
+          }
+        ]
+      }
+    },
+    "tasks": [
+      {
+        "id": "ac",
+        "type": "action",
+        "text": "Gelen kutunu aç, maillere göz at",
+        "options": [],
+        "right": "",
+        "why": ""
+      },
+      {
+        "id": "gorev",
+        "type": "mission",
+        "text": "Kulaklığı doğru yerden al",
+        "options": [],
+        "right": "Mağazanın kendi adresinden (teknopazar.com.tr) gelen maildeki bağlantıdan almak; SMS'te tutarı ve mağaza adını kontrol edip kodu öyle yazmak.",
+        "why": "İki mail birebir aynıydı. Gerçeğini ayıran gönderen adresi ve sitenin adresiydi; onay kodundaki tutar da bunu doğruladı."
+      },
+      {
+        "id": "incele",
+        "type": "review",
+        "text": "Gelen kutunu incele, şüpheli bulduklarını bildir",
+        "options": [],
+        "right": "",
+        "why": ""
+      },
+      {
+        "id": "sms-tutar",
+        "type": "question",
+        "text": "Annenin telefonuna gelen onay kodunda senin beklediğinden farklı bir tutar yazıyor. Ne yaparsın?",
+        "options": [
+          {
+            "text": "Kodu kimseye yazdırmam, anneme durumu anlatırım",
+            "points": 1
+          },
+          {
+            "text": "Sistem hatasıdır, kodu yazarım",
+            "points": 0
+          },
+          {
+            "text": "Önce kodu yazar, sonra iptal ederim",
+            "points": 0
+          },
+          {
+            "text": "Annemden kodu alır, tutara bakmadan girerim",
+            "points": 0
+          }
+        ],
+        "right": "Kodu yazmamak ve durumu annene anlatmak.",
+        "why": "Onay kodu, mesajda yazan tutarı ve mağazayı onaylayan imzadır. Tutar ya da mağaza beklediğin gibi değilse kod yazılmaz; yazılınca harcama geri alınamayabilir."
+      },
+      {
+        "id": "guvenli-yol",
+        "type": "question",
+        "text": "İnternetten alışverişin güvenli yolu hangisi?",
+        "options": [
+          {
+            "text": "Mağazanın kendi sitesine adresini kendim yazarak girerim",
+            "points": 1
+          },
+          {
+            "text": "Mailde gelen indirim linkinden",
+            "points": 0
+          },
+          {
+            "text": "En ucuz fiyatı gösteren siteden",
+            "points": 0
+          },
+          {
+            "text": "Arkadaşımın attığı linkten",
+            "points": 0
+          }
+        ],
+        "right": "Mağazanın sitesine adresini kendin yazarak girmek.",
+        "why": "Mailin görünüşü, logosu ve fiyatı kopyalanabilir. Adresi kendin yazınca sahte bir siteye düşmezsin."
+      }
+    ],
+    "tips": [
+      {
+        "text": "\"Ürüne git\"e basmadan önce adresi oku: teknopazar-gercek-tr.com mağazanın adresi değil.",
+        "when": "engaged"
+      },
+      {
+        "text": "Onay kodunu yazmadan önce SMS'teki tutarı ve mağaza adını oku. Beklediğin gibi değilse kod yazılmaz.",
+        "when": "hacked"
+      },
+      {
+        "text": "İki mail birebir aynı olabilir. Gerçeğini ayıran gönderen adresidir: @ işaretinden sonrasına bak.",
+        "when": "missedFake"
+      },
+      {
+        "text": "Gerçek TeknoPazar maili de aynı görünür ama mağazanın kendi adresinden gelir.",
+        "when": "reportedReal"
+      },
+      {
+        "text": "Ailenin kartını yalnızca onların izniyle, adresini kendin yazdığın mağazada kullan.",
+        "when": "always"
+      }
+    ],
+    "mission": {
+      "caller": "Annem",
+      "owner": "Annenin",
+      "lines": [
+        "Canım, bir şey rica edeceğim.",
+        "Yarın Ege'nin doğum günü. TeknoPazar'dan ona kablosuz kulaklık alır mısın?",
+        "Sitesi teknopazar.com.tr, başka bir adrese girme ha!",
+        "Kartımın bilgileri sende. 1.250 TL'yi geçme, tamam mı?",
+        "Onay kodu benim telefonuma gelecek, gelince sana söylerim."
+      ],
+      "title": "Ege'ye kablosuz kulaklık al",
+      "points": [
+        "**TeknoPazar**'dan kulaklığı al",
+        "Sitesi **teknopazar.com.tr**, başka adrese girme",
+        "En çok **1.250 TL** harca",
+        "**Annenin kartını** kullan",
+        "Onay kodu **annende**, o söyleyecek"
+      ],
+      "pointIcons": [
+        "headphones",
+        "globe",
+        "tag",
+        "card",
+        "lock"
+      ],
+      "accept": "Tamam anne, anladım",
+      "refuse": "Yazma, anneme anlat",
+      "card": {
+        "number": "4821 •••• •••• 3307",
+        "expiry": "08/29"
+      },
+      "shop": {
+        "name": "TeknoPazar",
+        "product": "Kablosuz Kulaklık · Siyah",
+        "price": "1.199 TL",
+        "note": "Yarın kargoda · Ücretsiz kargo",
+        "icon": "headphones"
+      },
+      "code": "481 920",
+      "coverIcon": "gift",
+      "good": [
+        "Kulaklık yarın geliyormuş, Ege çok sevinecek!",
+        "Bankadan gelen mesajda TeknoPazar ve 1.199 TL yazıyordu, tam doğru."
+      ],
+      "goodReported": "Öbür sahte TeknoPazar mailini de bildirmişsin. Teşekkürler canım!",
+      "goodTitle": "Ege'nin kulaklığı yolda",
+      "done": "Ege'nin kulaklığını doğru mağazadan aldın.",
+      "bad": [
+        "Bankadan mesaj geldi: kartımdan 4.850 TL çekilmiş!",
+        "Sen bana 1.199 TL demiştin. Hangi siteye girdin?",
+        "Hemen bankayı arayıp kartı kapattırıyorum."
+      ],
+      "voice": {
+        "lines": [
+          "/sesler/kulaklik-icin-veli-karti/acilis-1.mp3",
+          "/sesler/kulaklik-icin-veli-karti/acilis-2.mp3",
+          "",
+          "/sesler/kulaklik-icin-veli-karti/acilis-3.mp3",
+          "/sesler/kulaklik-icin-veli-karti/acilis-4.mp3"
+        ],
+        "good": [
+          "/sesler/kulaklik-icin-veli-karti/iyi-1.mp3",
+          "/sesler/kulaklik-icin-veli-karti/iyi-2.mp3"
+        ],
+        "goodReported": "/sesler/kulaklik-icin-veli-karti/iyi-3.mp3",
+        "bad": [
+          "/sesler/kulaklik-icin-veli-karti/kotu-1.mp3",
+          "/sesler/kulaklik-icin-veli-karti/kotu-2.mp3",
+          "/sesler/kulaklik-icin-veli-karti/kotu-3.mp3"
+        ]
+      }
+    }
+  }
+}

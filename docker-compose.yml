@@ -1,0 +1,119 @@
+# Careful Mode yayın düzeni: PostgreSQL + migration işi + uygulama (+ isteğe bağlı Caddy).
+# Kendi başına bir sunucuda (depo kökünde): cp .env.example .env, değerleri doldur, sonra
+#   docker compose up -d --build
+# .env.example'daki COMPOSE_PROFILES=caddy, HTTPS'i Caddy'nin yapmasını sağlar.
+# Başka sitelerle paylaşılan sunucuda Caddy çalışmaz; önde o sunucunun nginx'i durur
+# (docker/server/ ve .github/workflows/deploy.yml).
+
+name: cyberguard
+
+x-database-url: &database-url
+  # Uygulama ve migration işi veritabanına iç ağdan (db servisi) bağlanır.
+  DATABASE_URL: postgresql://${POSTGRES_USER:?POSTGRES_USER tanımlı olmalı}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD tanımlı olmalı}@db:5432/${POSTGRES_DB:?POSTGRES_DB tanımlı olmalı}?schema=public
+
+# Kayıtlar dönerek tutulur; disk dolmaz.
+x-logging: &logging
+  driver: local
+  options:
+    max-size: 10m
+    max-file: "5"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER tanımlı olmalı}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD tanımlı olmalı}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB tanımlı olmalı}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    # Veritabanı dışarıya port açmaz; yalnızca bu yığının iç ağından erişilir.
+    # Yerel geliştirmedeki localhost:5432 docker-compose.override.yml'den gelir.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+      start_interval: 2s
+    # Aynı sunucudaki diğer işleri sıkıştırmasın diye üst sınırlar.
+    mem_limit: 1g
+    cpus: 1.5
+    shm_size: 128m
+    logging: *logging
+
+  migrate:
+    # Sunucuda imaj yayın iş akışından gelir (APP_VERSION = commit); yerelde --build ile derlenir.
+    image: cyberguard-migrate:${APP_VERSION:-local}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: migrate
+    environment:
+      <<: *database-url
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    mem_limit: 512m
+    cpus: 1
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging: *logging
+
+  app:
+    image: cyberguard-app:${APP_VERSION:-local}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: runner
+    restart: unless-stopped
+    # .env'deki her değer uygulamaya geçer (RESEND_API_KEY, ADMIN_EMAILS...); sunucuda deploy.sh yazar.
+    env_file: .env
+    environment:
+      <<: *database-url
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+      start_interval: 2s
+    mem_limit: 1g
+    cpus: 2
+    # Ayrıcalıksız kullanıcı (node), Linux yetkileri kapalı, yetki yükseltme yok.
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging: *logging
+
+  caddy:
+    image: caddy:2-alpine
+    profiles: [caddy]
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    logging: *logging
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:

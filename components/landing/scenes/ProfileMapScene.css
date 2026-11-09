@@ -1,0 +1,485 @@
+/*
+ * Profil haritası sahnesi (tuvalde profile.html). Sınıflar sahnenin kök sınıfıyla başlar; ortak
+ * sınıfları (scene.css) ezen kurallar kök sınıfın altında yazılır, böylece seçici daha güçlüdür ve
+ * dosyaların yüklenme sırası önemsizdir.
+ */
+
+/* Profil kartı: sosyal profil gibi kapak, sayılar, biyografi satırları ve küçük fotoğraf şeridi. */
+.hs-profile .hs-profile-card {
+  top: 48px;
+  left: 0;
+  width: 290px;
+}
+
+.hs-profile-cover {
+  position: relative;
+  height: 56px;
+  overflow: hidden;
+  background: linear-gradient(120deg, var(--scene-cover), var(--scene-cover-2));
+}
+
+.hs-profile-cover::before,
+.hs-profile-cover::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--scene-white) 8%, transparent);
+}
+
+.hs-profile-cover::before {
+  top: -40px;
+  right: -16px;
+  width: 90px;
+  height: 90px;
+}
+
+.hs-profile-cover::after {
+  top: 18px;
+  right: 70px;
+  width: 54px;
+  height: 54px;
+}
+
+.hs-profile-me {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: -26px;
+  padding: 0 16px;
+}
+
+.hs-profile .hs-profile-me .hs-profile-avatar {
+  width: 56px;
+  height: 56px;
+  border: 4px solid var(--surface);
+  background: var(--scene-yellow);
+  font-size: 21px;
+}
+
+/* Görünürlük: "Herkese açık" söner, yerine "Arkadaşlar" gelir. */
+.hs-profile-visibility {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  min-width: 104px;
+  margin-bottom: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.hs-profile-visibility svg {
+  width: 12px;
+  height: 12px;
+}
+
+.hs-profile-public,
+.hs-profile-friends {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hs-profile-public {
+  color: var(--danger-fg);
+  animation: hs-profile-public-out 10s infinite;
+}
+
+.hs-profile-friends {
+  position: absolute;
+  right: 8px;
+  color: var(--success-fg);
+  animation: hs-profile-friends-in 10s infinite;
+}
+
+.hs-profile-name {
+  padding: 6px 16px 0;
+}
+
+.hs-profile-name b {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.hs-profile-name small {
+  color: var(--fg-3);
+  font-size: 12px;
+}
+
+.hs-profile-stats {
+  display: flex;
+  gap: 14px;
+  padding: 8px 16px 0;
+  color: var(--fg-3);
+  font-size: 12px;
+}
+
+.hs-profile-stats b {
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.hs-profile .hs-profile-body {
+  gap: 8px;
+  padding: 12px 16px 14px;
+}
+
+.hs-profile .hs-profile-row svg {
+  color: var(--fg-3);
+}
+
+.hs-profile-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.hs-profile-tiles i {
+  height: 38px;
+  border-radius: 8px;
+}
+
+.hs-profile-tiles i:nth-child(1) {
+  background: linear-gradient(135deg, var(--scene-deep-teal), color-mix(in srgb, var(--accent) 33%, transparent));
+}
+
+.hs-profile-tiles i:nth-child(2) {
+  background: linear-gradient(135deg, var(--scene-deep-olive), color-mix(in srgb, var(--scene-yellow) 33%, transparent));
+}
+
+.hs-profile-tiles i:nth-child(3) {
+  background: linear-gradient(135deg, var(--scene-deep-plum), color-mix(in srgb, var(--purple) 33%, transparent));
+}
+
+.hs-profile .hs-profile-hide {
+  align-self: flex-start;
+}
+
+/* Harita kartı: yabancının gözünden. */
+.hs-profile .hs-profile-map {
+  top: 92px;
+  right: 0;
+  width: 198px;
+  padding: 12px;
+}
+
+.hs-profile-map-box {
+  position: relative;
+  height: 160px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--scene-map);
+}
+
+.hs-profile-city {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hs-profile-water {
+  fill: none;
+  stroke: var(--scene-map-water);
+}
+
+.hs-profile-park {
+  fill: var(--scene-map-park);
+}
+
+.hs-profile-tree {
+  fill: var(--scene-map-tree);
+}
+
+.hs-profile-block {
+  fill: var(--scene-map-block);
+}
+
+.hs-profile-road {
+  stroke: var(--scene-map-road);
+}
+
+.hs-profile-street {
+  fill: var(--scene-map-label);
+  font-size: 8px;
+}
+
+.hs-profile-route {
+  fill: none;
+  stroke: var(--danger);
+  stroke-dasharray: 150;
+  stroke-dashoffset: 150;
+  animation: hs-profile-route-draw 10s infinite;
+}
+
+.hs-profile-marker {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px var(--shadow-color);
+}
+
+.hs-profile-marker svg {
+  width: 14px;
+  height: 14px;
+}
+
+.hs-profile-school {
+  top: 22px;
+  left: 20px;
+  background: var(--accent);
+  color: var(--on-accent);
+  animation: hs-profile-school-in 10s infinite;
+}
+
+.hs-profile-pin {
+  position: absolute;
+  top: 88px;
+  left: 128px;
+  width: 30px;
+  height: 38px;
+  color: var(--danger);
+  animation: hs-profile-pin-drop 10s infinite;
+}
+
+.hs-profile-pin svg {
+  width: 100%;
+  height: 100%;
+}
+
+.hs-profile-ring {
+  position: absolute;
+  top: 114px;
+  left: 123px;
+  width: 40px;
+  height: 16px;
+  border: 2px solid var(--danger);
+  border-radius: 50%;
+  animation: hs-profile-pin-ring 10s infinite;
+}
+
+/* Profil gizlenince harita kapanır. */
+.hs-profile-lock {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: color-mix(in srgb, var(--scene-map) 82%, transparent);
+  backdrop-filter: blur(2px);
+  color: var(--success-fg);
+  font-size: 12.5px;
+  font-weight: 700;
+  animation: hs-profile-map-lock 10s infinite;
+}
+
+.hs-profile-lock svg {
+  width: 22px;
+  height: 22px;
+}
+
+.hs-profile-learned {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hs-profile-learned span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--fg-2);
+  font-size: 12px;
+}
+
+.hs-profile-learned svg {
+  width: 12px;
+  height: 12px;
+  color: var(--danger-fg);
+}
+
+.hs-profile-learned1 {
+  animation: hs-profile-learned-1 10s infinite;
+}
+
+.hs-profile-learned2 {
+  animation: hs-profile-learned-2 10s infinite;
+}
+
+.hs-profile-learned3 {
+  animation: hs-profile-learned-3 10s infinite;
+}
+
+@keyframes hs-profile-public-out {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  68%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hs-profile-friends-in {
+  0%,
+  64% {
+    opacity: 0;
+  }
+  72%,
+  90% {
+    opacity: 1;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hs-profile-learned-1 {
+  0%,
+  15% {
+    opacity: 0.25;
+  }
+  19%,
+  92% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes hs-profile-learned-2 {
+  0%,
+  27% {
+    opacity: 0.25;
+  }
+  31%,
+  92% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes hs-profile-learned-3 {
+  0%,
+  37% {
+    opacity: 0.25;
+  }
+  41%,
+  92% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes hs-profile-school-in {
+  0%,
+  15% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  19%,
+  62% {
+    opacity: 1;
+    transform: none;
+  }
+  68%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hs-profile-route-draw {
+  0%,
+  30% {
+    stroke-dashoffset: 150;
+    opacity: 1;
+  }
+  44%,
+  62% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  68%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes hs-profile-pin-drop {
+  0%,
+  41% {
+    opacity: 0;
+    transform: translateY(-26px);
+  }
+  46% {
+    opacity: 1;
+    transform: translateY(3px);
+  }
+  49%,
+  62% {
+    opacity: 1;
+    transform: none;
+  }
+  68%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+@keyframes hs-profile-pin-ring {
+  0%,
+  46% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  58% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hs-profile-map-lock {
+  0%,
+  62% {
+    opacity: 0;
+  }
+  68%,
+  92% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0;
+  }
+}

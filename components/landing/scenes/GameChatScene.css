@@ -1,0 +1,141 @@
+/*
+ * Oyun sohbeti sahnesi (tuvalde chat.html). Sınıflar sahnenin kök sınıfıyla başlar; ortak sınıfları
+ * (scene.css) ezen kurallar kök sınıfın altında yazılır, böylece seçici daha güçlüdür ve dosyaların
+ * yüklenme sırası önemsizdir.
+ */
+
+.hs-chat-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+.hs-chat-glow-me {
+  bottom: 20px;
+  left: 0;
+  width: 190px;
+  height: 190px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 14%, transparent), transparent 65%);
+}
+
+.hs-chat-glow-them {
+  right: 0;
+  bottom: 30px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--purple) 16%, transparent), transparent 65%);
+}
+
+.hs-chat-me {
+  bottom: 10px;
+  left: 18px;
+  width: 150px;
+  height: 200px;
+}
+
+.hs-chat-them {
+  right: 14px;
+  bottom: 10px;
+  width: 150px;
+  height: 200px;
+}
+
+/* Karartıların renkleri (SVG). */
+.hs-chat-me-top {
+  stop-color: var(--scene-person);
+}
+
+.hs-chat-me-bottom {
+  stop-color: var(--scene-person-2);
+}
+
+.hs-chat-them-top {
+  stop-color: var(--scene-stranger);
+}
+
+.hs-chat-them-bottom {
+  stop-color: var(--scene-stranger-2);
+}
+
+.hs-chat-headset {
+  fill: var(--scene-headset);
+}
+
+.hs-chat-headset-shine {
+  fill: var(--scene-headset-shine);
+  opacity: 0.35;
+}
+
+.hs-chat-beanie {
+  fill: var(--scene-beanie);
+}
+
+.hs-chat-beanie-shine {
+  fill: none;
+  stroke: var(--scene-beanie-shine);
+}
+
+.hs-chat-beanie-band {
+  fill: var(--scene-beanie-band);
+}
+
+.hs-chat-beanie-rib {
+  fill: var(--scene-beanie-rib);
+}
+
+.hs-chat-pompom {
+  fill: var(--scene-beanie-pompom);
+}
+
+.hs-chat .hs-chat-question {
+  right: 16px;
+  max-width: 236px;
+}
+
+.hs-chat-q1 {
+  top: 56px;
+}
+
+.hs-chat-q2 {
+  top: 110px;
+}
+
+.hs-chat-q3 {
+  top: 164px;
+}
+
+.hs-chat .hs-chat-reply {
+  top: 262px;
+  left: 170px;
+  max-width: 170px;
+}
+
+.hs-chat .hs-chat-reply .hs-chat-report {
+  height: 28px;
+  margin-top: 8px;
+  font-size: 12.5px;
+}
+
+.hs-chat .hs-chat-recovery {
+  top: 56px;
+  left: 0;
+  width: 214px;
+}
+
+.hs-chat .hs-chat-recovery .hs-chat-row {
+  gap: 7px;
+}
+
+.hs-chat .hs-chat-stranger {
+  top: 214px;
+  right: 6px;
+}
+
+.hs-chat .hs-chat-room {
+  top: 4px;
+  left: 0;
+}
+
+.hs-chat .hs-chat-label {
+  left: 250px;
+}

@@ -1,0 +1,290 @@
+# Sunucu işleri: "inspect" sunucuya sadece bakar, "deploy" siteyi günceller, "backup" şimdi
+# bir veritabanı yedeği alır, "restore-test" en yeni yedekle geri yükleme denemesi yapar,
+# "demo-data" örnek veriyi ekler (varsa baştan kurar), "demo-data-remove" örnek veriyi siler.
+# CI (ci.yml) main'e her girişte testler geçtikten sonra "deploy" çağırır; hepsi Actions
+# sekmesinden elle çalıştırılabilir ("deploy" dışındakiler yalnızca elle).
+#
+# Sunucu başka sitelerle paylaşılır. Bu iş yalnızca kendi klasörüne
+# (/opt/apps/cyberguard), yedek klasörüne (/opt/backups/cyberguard), kendi Docker yığınına
+# (proje adı "cyberguard"), kendi systemd birimlerine (cyberguard-backup.*) ve nginx'teki kendi
+# girişine dokunur. Ayrıntı: docker/server/.
+#
+# Bağlantı: SUNUCU_SSH_ANAHTARI depo sırrı (özel anahtar), parolası SUNUCU_SSH_PAROLA.
+# Sır tanımlı değilse iş uyarı verip atlar.
+name: Yayın
+
+on:
+  workflow_call:
+    inputs:
+      operation:
+        type: string
+        default: deploy
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: "deploy: siteyi günceller · inspect: sunucuya sadece bakar · backup: şimdi yedek alır · restore-test: geri yükleme denemesi · demo-data: örnek veriyi ekler · demo-data-remove: örnek veriyi siler"
+        type: choice
+        options: [deploy, inspect, backup, restore-test, demo-data, demo-data-remove]
+        default: deploy
+      window:
+        description: "Yalnızca inspect: kesinti aralığı (UTC), örnek 2026-10-20 20:00..2026-10-20 20:20"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+# Aynı anda tek sunucu işi; yarıda kesilmez.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  # Depo public: sunucunun adresi, kullanıcısı ve anahtar parmak izleri depo sırlarında durur
+  # (SERVER_HOST, SERVER_USER, SERVER_KNOWN_HOSTS). Site Cloudflare'in arkasında; asıl IP görünmemeli.
+  SERVER_HOST: ${{ secrets.SERVER_HOST }}
+  SERVER_USER: ${{ secrets.SERVER_USER }}
+  SERVER_PORT: "22"
+  REMOTE_DIR: /opt/apps/cyberguard
+  DOMAIN: bitirme.muratbulut.net
+  # Uygulama sunucuda yalnızca 127.0.0.1:<port>'ta dinler.
+  APP_PORT: "3002"
+
+jobs:
+  server:
+    name: Sunucu (${{ inputs.operation }})
+    # Sürüm sabit, CI ile aynı gerekçe (ci.yml).
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Anahtar tanımlı mı
+        id: key
+        env:
+          SSH_KEY: ${{ secrets.SUNUCU_SSH_ANAHTARI }}
+          KNOWN_HOSTS: ${{ secrets.SERVER_KNOWN_HOSTS }}
+        run: |
+          if [ -z "$SSH_KEY" ]; then
+            echo "::warning::SUNUCU_SSH_ANAHTARI tanımlı değil; sunucu işi atlandı."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          elif [ -z "$SERVER_HOST" ] || [ -z "$SERVER_USER" ] || [ -z "$KNOWN_HOSTS" ]; then
+            echo "::error::SERVER_HOST, SERVER_USER ve SERVER_KNOWN_HOSTS depo sırları tanımlı olmalı."
+            exit 1
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.key.outputs.present == 'true'
+
+      - name: SSH bağlantısını hazırla
+        if: steps.key.outputs.present == 'true'
+        env:
+          SSH_KEY: ${{ secrets.SUNUCU_SSH_ANAHTARI }}
+          SSH_PASSPHRASE: ${{ secrets.SUNUCU_SSH_PAROLA }}
+          KNOWN_HOSTS: ${{ secrets.SERVER_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          # Windows'tan kopyalanan anahtardaki satır sonu (\r) temizlenir.
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/server
+          chmod 600 ~/.ssh/server
+          # Anahtarın kendisi yazdırılmaz; sorun çıkarsa yalnızca türü ve hata mesajı görünür.
+          case "$(head -n 1 ~/.ssh/server)" in
+            *"BEGIN OPENSSH PRIVATE KEY"*) kind="OpenSSH özel anahtarı" ;;
+            *"BEGIN RSA PRIVATE KEY"* | *"BEGIN EC PRIVATE KEY"* | *"BEGIN PRIVATE KEY"*) kind="PEM özel anahtarı" ;;
+            *"BEGIN ENCRYPTED PRIVATE KEY"*) kind="parolalı PEM özel anahtarı" ;;
+            *PuTTY*) kind="PuTTY anahtarı (.ppk), OpenSSH biçimine çevrilmeli" ;;
+            ssh-*) kind="açık anahtar (.pub), özel anahtar gerekli" ;;
+            *) kind="tanınmayan biçim" ;;
+          esac
+          echo "Anahtar: $kind, $(wc -l < ~/.ssh/server) satır"
+          # Parola yalnızca bu geçici kopyadan kaldırılır; iş sonunda kopya silinir.
+          if [ -n "$SSH_PASSPHRASE" ]; then
+            ssh-keygen -p -q -P "$SSH_PASSPHRASE" -N "" -f ~/.ssh/server > /dev/null
+          fi
+          if ! error=$(ssh-keygen -y -P "" -f ~/.ssh/server 2>&1 > /dev/null); then
+            echo "ssh-keygen: $error"
+            echo "::error::Anahtar okunamadı ($kind). Parolalıysa parolayı SUNUCU_SSH_PAROLA sırrına ekleyin."
+            exit 1
+          fi
+
+          # Sunucunun kimliği SERVER_KNOWN_HOSTS sırrında sabitlidir; başka bir makine araya giremez.
+          printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+          cat > ~/.ssh/config <<EOF
+          Host server
+            HostName $SERVER_HOST
+            User $SERVER_USER
+            Port $SERVER_PORT
+            IdentityFile ~/.ssh/server
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            ConnectTimeout 15
+            ServerAliveInterval 30
+          EOF
+          ssh server true && echo "Bağlantı tamam."
+
+      - name: Sunucu kontrolü
+        if: steps.key.outputs.present == 'true' && inputs.operation == 'inspect'
+        env:
+          WINDOW: ${{ inputs.window }}
+        run: |
+          start="${WINDOW%%..*}"; end="${WINDOW##*..}"
+          # Yalnızca tarih ve saat karakterleri geçer; uzak kabuğa başka bir şey gitmez.
+          if [[ -n "$WINDOW" && "$start$end" =~ ^[0-9:\ -]+$ ]]; then
+            ssh server "KESINTI_BASLA='$start' KESINTI_BITIR='$end' bash -s" < docker/server/inspect.sh
+          else
+            ssh server 'bash -s' < docker/server/inspect.sh
+          fi
+
+      # --- Yedek ve geri yükleme denemesi (yalnızca elle) ----------------------------------
+      # Sunucudaki betikler son yayında yüklenenlerdir (docker/server/).
+      - name: Şimdi yedek al
+        if: steps.key.outputs.present == 'true' && inputs.operation == 'backup'
+        run: |
+          # shellcheck disable=SC2029
+          ssh server "bash '$REMOTE_DIR/docker/server/backup.sh' manual"
+
+      - name: Geri yükleme denemesi
+        if: steps.key.outputs.present == 'true' && inputs.operation == 'restore-test'
+        run: |
+          # shellcheck disable=SC2029
+          ssh server "bash '$REMOTE_DIR/docker/server/restore-test.sh'"
+
+      # --- Örnek veri (yalnızca elle) --------------------------------------------------------
+      # Ne eklendiği: prisma/demo-data.ts; docker/server/README.md, "Örnek veri". Önce elle yedek
+      # alınır. Giriş yapılabilen altı örnek hesabın şifresi DEMO_PASSWORD depo sırrıdır; komut
+      # satırına girmez, stdin'den sunucudaki betiğe geçer.
+      - name: Örnek veriyi ekle
+        if: steps.key.outputs.present == 'true' && inputs.operation == 'demo-data'
+        env:
+          DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
+        run: |
+          if [ "${#DEMO_PASSWORD}" -lt 12 ]; then
+            echo "::error::DEMO_PASSWORD sırrı tanımlı değil ya da 12 karakterden kısa; örnek veri eklenmedi."
+            exit 1
+          fi
+          # shellcheck disable=SC2029
+          printf '%s' "$DEMO_PASSWORD" | ssh server "bash '$REMOTE_DIR/docker/server/demo-data.sh' add"
+
+      - name: Örnek veriyi sil
+        if: steps.key.outputs.present == 'true' && inputs.operation == 'demo-data-remove'
+        run: |
+          # shellcheck disable=SC2029
+          ssh server "bash '$REMOTE_DIR/docker/server/demo-data.sh' remove" < /dev/null
+
+      # --- Yayın ---------------------------------------------------------------------
+      - uses: docker/setup-buildx-action@v4
+        if: steps.key.outputs.present == 'true' && inputs.operation == 'deploy'
+
+      - name: Uygulama imajı
+        if: steps.key.outputs.present == 'true' && inputs.operation == 'deploy'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/Dockerfile
+          target: runner
+          load: true
+          tags: cyberguard-app:${{ github.sha }}
+          cache-from: type=gha,scope=app
+
+      - name: Migration imajı
+        if: steps.key.outputs.present == 'true' && inputs.operation == 'deploy'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/Dockerfile
+          target: migrate
+          load: true
+          tags: cyberguard-migrate:${{ github.sha }}
+          cache-from: |
+            type=gha,scope=migrate
+            type=gha,scope=app
+
+      # Sunucuya yalnızca yayın dosyaları gider (kaynak kod değil): compose ve docker/server/.
+      - name: Dosyaları ve imajları sunucuya yükle
+        if: steps.key.outputs.present == 'true' && inputs.operation == 'deploy'
+        env:
+          VERSION: ${{ github.sha }}
+        run: |
+          # Sunucu kuralı: her uygulamanın kendi /opt/apps/<ad> ve /opt/backups/<ad> klasörü.
+          # shellcheck disable=SC2029 # değişkenler bilerek bu tarafta açılır
+          ssh server "sudo -n install -d -o \$(id -un) -g \$(id -gn) -m 750 '$REMOTE_DIR' \
+            && sudo -n install -d -o \$(id -un) -g \$(id -gn) -m 700 /opt/backups/cyberguard"
+          # Türkçe adlı eski betik klasörü (docker/sunucu) artık kullanılmıyor; kalmışsa silinir.
+          # shellcheck disable=SC2029
+          ssh server "rm -rf '$REMOTE_DIR/docker/sunucu'"
+          # shellcheck disable=SC2029
+          tar czf - docker-compose.yml docker/server | ssh server "tar xzf - -C '$REMOTE_DIR'"
+          docker save "cyberguard-app:$VERSION" "cyberguard-migrate:$VERSION" \
+            | gzip -1 | ssh server 'gunzip | sudo -n docker load'
+
+      - name: Yeni sürümü başlat
+        if: steps.key.outputs.present == 'true' && inputs.operation == 'deploy'
+        env:
+          VERSION: ${{ github.sha }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          # İlk yöneticiler (Faz 3): depo değişkeni (sır değil), virgülle ayrılmış e-postalar.
+          ADMIN_EMAILS: ${{ vars.ADMIN_EMAILS }}
+        run: |
+          if [ -z "$RESEND_API_KEY" ]; then
+            echo "::warning::RESEND_API_KEY sırrı tanımlı değil; canlı site kod maili gönderemez."
+          fi
+          if [ -z "$ADMIN_EMAILS" ]; then
+            echo "::warning::ADMIN_EMAILS depo değişkeni tanımlı değil; sunucudaki eski değer (varsa) kalır."
+          fi
+          # Değerler komut satırına girmez; deploy.sh onları stdin'den okuyup sunucudaki .env'e yazar.
+          # shellcheck disable=SC2029
+          printf 'RESEND_API_KEY=%s\nADMIN_EMAILS=%s\n' "$RESEND_API_KEY" "$ADMIN_EMAILS" \
+            | ssh server "bash '$REMOTE_DIR/docker/server/deploy.sh' '$VERSION' '$DOMAIN' '$APP_PORT'"
+
+      # Gece yedeği (her gece 03:30, Türkiye saati). Kurulamazsa yayın düşmez, uyarı verilir;
+      # elle kurulum docker/server/README.md'de (Yedekleme).
+      - name: Gece yedeği zamanlayıcısı
+        if: steps.key.outputs.present == 'true' && inputs.operation == 'deploy'
+        run: |
+          # shellcheck disable=SC2029
+          ssh server "bash '$REMOTE_DIR/docker/server/install-backup-timer.sh'" | tee timer.txt || true
+          if grep -q '^BACKUP_TIMER=ready' timer.txt; then
+            echo "Gece yedeği zamanlayıcısı açık."
+          elif grep -q '^BACKUP_TIMER=manual' timer.txt; then
+            echo "::warning::Gece yedeği zamanlayıcısı kurulamadı (şifresiz sudo ile systemctl yok); elle kurulum: docker/server/README.md, Yedekleme."
+          else
+            echo "::error::Gece yedeği zamanlayıcısı kurulamadı; ayrıntı bu adımın kaydında. Site yayında, yalnızca gece yedeği eksik."
+          fi
+          if grep -q '^BACKUP_LAST=failed' timer.txt; then
+            echo "::warning::Son gece yedeği başarısız oldu; ayrıntı: sunucuda journalctl -u cyberguard-backup."
+          fi
+
+      - name: nginx girişi ve sertifika
+        id: nginx
+        if: steps.key.outputs.present == 'true' && inputs.operation == 'deploy'
+        run: |
+          # shellcheck disable=SC2029
+          ssh server "bash '$REMOTE_DIR/docker/server/install-nginx.sh' '$DOMAIN' '$APP_PORT'" | tee nginx.txt
+          if grep -q '^NGINX=ready' nginx.txt; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Site ayakta ama HTTPS sertifikası bekleniyor; imza isteği (CSR) bu adımın kaydında."
+          fi
+
+      # Uçtan uca testlerin hepsi canlı adreste de çalışır (hepsi yalnızca okur).
+      - uses: actions/setup-node@v7
+        if: steps.nginx.outputs.ready == 'true'
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Canlı adreste uçtan uca testler
+        if: steps.nginx.outputs.ready == 'true'
+        env:
+          PW_BASE_URL: https://${{ env.DOMAIN }}
+          DATABASE_URL: postgresql://none:none@localhost:5432/none
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test
+
+      - name: Anahtarı sil
+        if: always()
+        run: rm -f ~/.ssh/server

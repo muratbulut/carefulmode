@@ -1,0 +1,597 @@
+/*
+ * Tanıtım sahnelerinin ortak tabanı (tuvaldeki base.css'in sitedeki karşılığı). Genel CSS'tir
+ * (bu projede turbopack kuralı CSS Modules'u düz CSS'e çevirir); bu yüzden bütün sınıf ve
+ * hareket adları hs- ile başlar, Tailwind sınıflarıyla ve globals.css'teki adlarla çakışmaz.
+ * Sahneye özgü kurallar <Sahne>.css dosyalarında, sahnenin kök sınıfı altında. Renkler yalnızca
+ * app/globals.css'teki tema değişkenlerinden gelir. Postam'la aynı hareketler (süzülme, tarama,
+ * etiket, basma, bildirim, kalkan parıltısı) globals.css'teki anim-* sınıflarıyla verilir; burada
+ * yalnızca bu sahnelere özgü vuruşlar var. Bütün döngü 10 saniye: tarama 0-4.6 sn, işaretler
+ * 1.8 / 3.0 / 4.0 sn, "3 şüpheli işaret" 5.4 sn, basma 6 sn, bildirim 7 sn. "Hareketi azalt"
+ * açıkken globals.css'teki genel kural hepsini durdurur; sahne son haliyle durağan görünür.
+ */
+
+/* ---------- Dönen alan (HeroScenes) ---------- */
+
+.hs-area {
+  container-type: inline-size;
+}
+
+.hs-layer {
+  position: absolute;
+  inset: 0;
+}
+
+/* Gelen sahne yavaşça belirir. */
+.hs-enter {
+  animation: hs-scene-in 0.6s ease both;
+}
+
+/* Giden sahne bulunduğu saydamlıktan (style="opacity") söner. */
+.hs-leave {
+  pointer-events: none;
+  animation: hs-scene-out 0.6s ease forwards;
+}
+
+/* Sayfa canlanmadan önce sunucunun çizdiği Postam: JS hızlı gelirse hiç görünmez, gelmezse belirir. */
+.hs-fallback {
+  animation: hs-scene-in 0.6s ease 1.2s both;
+}
+
+@keyframes hs-scene-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes hs-scene-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/*
+ * 500x440'lık sahne alanın ortasına oturur. Masaüstünde %90; telefonda alan 358 px genişliğinde
+ * (Postam'ın telefon düzeniyle aynı), sahne genişliğe sığacak kadar küçülür (358 / 500 = .716;
+ * daha dar telefonlarda kademeli).
+ */
+.hs-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 500px;
+  height: 440px;
+  transform: translate(-50%, -50%) scale(0.716);
+}
+
+@container (max-width: 357.98px) {
+  .hs-stage {
+    transform: translate(-50%, -50%) scale(0.64);
+  }
+}
+
+@container (max-width: 319.98px) {
+  .hs-stage {
+    transform: translate(-50%, -50%) scale(0.576);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hs-stage {
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+}
+
+/* ---------- Sahne dili ---------- */
+
+.hs-scene {
+  --flag: color-mix(in srgb, var(--danger) 22%, transparent);
+  margin: 0;
+  font-size: 14px;
+  line-height: normal;
+  color: var(--fg);
+}
+
+.hs-art {
+  position: absolute;
+  inset: 0;
+}
+
+/* Tarama çizgisi (anim-scan ile yukarıdan aşağı iner). */
+.hs-scan {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  z-index: 3;
+  height: 2px;
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  box-shadow: 0 0 14px var(--accent);
+}
+
+/* Sırayla yanan şüpheli işaretler. */
+.hs-f1,
+.hs-f2,
+.hs-f3 {
+  border-radius: 4px;
+  padding: 1px 4px;
+  background: var(--flag);
+  color: var(--danger-fg);
+}
+
+.hs-f1 {
+  animation: hs-flag-on-1 10s infinite;
+}
+
+.hs-f2 {
+  animation: hs-flag-on-2 10s infinite;
+}
+
+.hs-f3 {
+  animation: hs-flag-on-3 10s infinite;
+}
+
+.hs-sub {
+  font-size: 12px;
+  color: var(--fg-3);
+}
+
+.hs-btns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.hs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.hs-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.hs-blue {
+  background: var(--scene-blue);
+  color: var(--scene-white);
+}
+
+.hs-red {
+  background: var(--danger);
+  color: var(--on-danger);
+}
+
+/* "3 şüpheli işaret" (anim-label-pop). */
+.hs-label {
+  position: absolute;
+  top: 0;
+  left: 230px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--danger);
+  color: var(--on-danger);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 10px 24px var(--shadow-color-soft);
+}
+
+.hs-label svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* Sondaki doğru karar bildirimi (anim-toast-slide). */
+.hs-toast {
+  position: absolute;
+  bottom: 0;
+  left: 24px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--success);
+  border-radius: 12px;
+  background: var(--success-subtle);
+  color: var(--success-subtle-fg);
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 12px 28px var(--shadow-color);
+}
+
+.hs-toast svg {
+  width: 16px;
+  height: 16px;
+  color: var(--success);
+}
+
+/* Parlayan kalkan (anim-glow-pulse). */
+.hs-shield {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  border: 1px solid var(--accent);
+  border-radius: 22px;
+  background: var(--surface);
+}
+
+.hs-shield svg {
+  width: 52px;
+  height: auto;
+}
+
+/* Küçük etiket hapı. */
+.hs-pill {
+  position: absolute;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--fg-2);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px var(--shadow-color-soft);
+}
+
+.hs-pill svg {
+  width: 14px;
+  height: 14px;
+}
+
+.hs-pop {
+  animation: hs-pop 10s infinite;
+}
+
+.hs-pop-early {
+  animation: hs-pop-early 10s infinite;
+}
+
+.hs-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--fg-2);
+}
+
+.hs-row svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+}
+
+.hs-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hs-who b {
+  display: block;
+  font-size: 13px;
+}
+
+.hs-avatar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--on-accent);
+  font-weight: 700;
+}
+
+/* Sohbet balonları. */
+.hs-bubble {
+  position: absolute;
+  z-index: 3;
+  max-width: 230px;
+  padding: 9px 12px;
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--fg-2);
+  font-size: 13px;
+  line-height: 1.45;
+  box-shadow: 0 10px 24px var(--shadow-color);
+}
+
+.hs-bubble-them {
+  border-bottom-right-radius: 4px;
+}
+
+.hs-bubble-me {
+  border-bottom-left-radius: 4px;
+  background: var(--scene-blue);
+  color: var(--scene-white);
+}
+
+.hs-bubble1 {
+  animation: hs-bubble-1 10s infinite;
+}
+
+.hs-bubble2 {
+  animation: hs-bubble-2 10s infinite;
+}
+
+.hs-bubble3 {
+  animation: hs-bubble-3 10s infinite;
+}
+
+.hs-bubble-reply {
+  animation: hs-bubble-reply 10s infinite;
+}
+
+/* Ana pencere: Postam penceresiyle aynı kabuk. */
+.hs-window {
+  position: absolute;
+  z-index: 2;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: 0 24px 48px var(--shadow-color);
+}
+
+.hs-window-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+}
+
+/* Yan kart: Doğrulayıcı kartıyla aynı kabuk. */
+.hs-side {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: 0 24px 48px var(--shadow-color);
+}
+
+.hs-cap {
+  color: var(--fg-3);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Sade dizüstü: ekran ve ince taban. */
+.hs-laptop {
+  position: absolute;
+  z-index: 2;
+}
+
+.hs-screen {
+  position: relative;
+  overflow: hidden;
+  border: 9px solid var(--scene-bezel);
+  border-bottom-width: 12px;
+  border-radius: 16px 16px 6px 6px;
+  background: var(--surface);
+  box-shadow:
+    0 24px 48px var(--shadow-color),
+    0 0 0 1px var(--line-strong);
+}
+
+.hs-laptop-base {
+  height: 12px;
+  margin: 0 -22px;
+  border-radius: 2px 2px 12px 12px;
+  background: linear-gradient(180deg, var(--scene-device-2), var(--scene-device));
+  box-shadow: 0 14px 28px var(--shadow-color);
+}
+
+.hs-laptop-base::after {
+  content: "";
+  display: block;
+  width: 70px;
+  height: 4px;
+  margin: 0 auto;
+  border-radius: 0 0 6px 6px;
+  background: var(--scene-device-foot);
+}
+
+/* Yüzsüz karartı karakter. */
+.hs-figure {
+  position: absolute;
+  z-index: 1;
+}
+
+.hs-figure svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* ---------- Vuruşlar ---------- */
+
+@keyframes hs-flag-on-1 {
+  0%,
+  12% {
+    background: transparent;
+    color: inherit;
+  }
+  18%,
+  88% {
+    background: var(--flag);
+    color: var(--danger-fg);
+  }
+  96%,
+  100% {
+    background: transparent;
+    color: inherit;
+  }
+}
+
+@keyframes hs-flag-on-2 {
+  0%,
+  24% {
+    background: transparent;
+    color: inherit;
+  }
+  30%,
+  88% {
+    background: var(--flag);
+    color: var(--danger-fg);
+  }
+  96%,
+  100% {
+    background: transparent;
+    color: inherit;
+  }
+}
+
+@keyframes hs-flag-on-3 {
+  0%,
+  34% {
+    background: transparent;
+    color: inherit;
+  }
+  40%,
+  88% {
+    background: var(--flag);
+    color: var(--danger-fg);
+  }
+  96%,
+  100% {
+    background: transparent;
+    color: inherit;
+  }
+}
+
+@keyframes hs-pop {
+  0%,
+  22% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  27%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes hs-pop-early {
+  0%,
+  5% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  9%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes hs-bubble-1 {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  12%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hs-bubble-2 {
+  0%,
+  22% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  26%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hs-bubble-3 {
+  0%,
+  34% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  38%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hs-bubble-reply {
+  0%,
+  66% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  71%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}

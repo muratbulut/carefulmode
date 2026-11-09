@@ -1,0 +1,22 @@
+# Yük testi yığını: docker-compose.yml + docker/server/compose.yml (sunucudaki düzen ve sınırlar:
+# uygulama 2 CPU / 1 GB, veritabanı 1,5 CPU / 1 GB) üstüne yalnızca yerel ölçüm için eklenenler.
+# tests/load/stack.sh kullanır; proje adı ayrıdır (cg-load), sunucudaki yığına hiçbir etkisi yoktur.
+#
+# - İmaj adları ayrı: başka bir yerel yayının eski imaj temizliği bu imajları silmesin.
+# - Veritabanı yalnızca bu makineden (127.0.0.1) açılır: prepare.ts hesapları ve oturumları yazar.
+# - Kod mailleri bir klasöre yazılır: okul-IP denemesi (school-ip.js) kodu oradan okur.
+
+services:
+  db:
+    ports:
+      - "127.0.0.1:${LOAD_DB_PORT:-15205}:5432"
+
+  migrate:
+    image: cg-load-migrate:local
+
+  app:
+    image: cg-load-app:local
+    environment:
+      MAIL_OUTBOX_DIR: /outbox
+    volumes:
+      - ${LOAD_OUTBOX_DIR:?LOAD_OUTBOX_DIR tanımlı olmalı}:/outbox
