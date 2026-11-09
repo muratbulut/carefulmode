@@ -2,8 +2,10 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { FlowingThreads } from "@/components/background/FlowingThreads";
+import { FormMascot } from "@/components/mascot/FormMascot";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { Wordmark, brand } from "@/lib/brand";
+import { LiveWordmark } from "@/components/mascot/LiveWordmark";
+import { brand } from "@/lib/brand";
 import { format, getMessages } from "@/lib/i18n";
 import { routes } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
@@ -27,7 +29,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
             className="-my-1.5 flex items-center gap-2.5 py-1.5 text-fg no-underline"
             aria-label={format(t.site.homeLink, { brand: brand.name })}
           >
-            <Wordmark className="h-[15px] w-auto lg:h-[18px]" />
+            <LiveWordmark className="h-[15px] w-auto lg:h-[18px]" />
           </Link>
           <div className="flex items-center gap-3">
             <Link
@@ -76,9 +78,11 @@ export function AuthSplit({ form, panel }: { form: ReactNode; panel: ReactNode }
   );
 }
 
+/** Hesap ekranlarının başlığı; üstünde e-postayı izleyen, şifrede gözünü kapatan maskot (FormMascot). */
 export function AuthHeading({ title, lead }: { title: ReactNode; lead?: ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
+      <FormMascot className="mb-2 w-[84px] md:w-[96px]" />
       <h1 className="font-heading text-[30px] leading-[1.1] font-bold tracking-[-0.5px] md:text-4xl">{title}</h1>
       {lead ? <p className="text-base leading-[1.55] text-fg-3">{lead}</p> : null}
     </div>

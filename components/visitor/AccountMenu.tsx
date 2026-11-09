@@ -4,6 +4,7 @@ import { LayoutDashboard, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { UserAvatar } from "@/components/profile/UserAvatar";
+import { SIGN_OUT_EVENT } from "@/components/mascot/PageOverlay";
 import { signOut } from "@/lib/account/actions";
 import { getMessages } from "@/lib/i18n";
 import { paths, routes } from "@/lib/navigation";
@@ -70,7 +71,7 @@ export function AccountMenu({ name, email, emoji, admin = false }: { name: strin
               {t.adminPanel}
             </Link>
           ) : null}
-          <form action={signOut}>
+          <form action={signOut} onSubmit={() => window.dispatchEvent(new Event(SIGN_OUT_EVENT))}>
             <button type="submit" className={cn(itemClass, "text-danger-fg")}>
               <LogOut className="size-[18px]" strokeWidth={2} aria-hidden="true" />
               {t.signOut}

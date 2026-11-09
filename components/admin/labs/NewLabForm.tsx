@@ -216,7 +216,7 @@ export function NewLabForm({ neighborhoods, initialNeighborhood }: { neighborhoo
             disabled={pending}
             className="flex h-12 flex-[1.4] items-center justify-center gap-2 rounded-xl bg-accent text-[15px] font-bold text-on-accent disabled:opacity-70"
           >
-            {pending ? <Spinner className="border-on-accent/30 border-t-on-accent" /> : null}
+            {pending ? <Spinner tone="onAccent" /> : null}
             {pending ? t.creating : t.create}
           </button>
         </div>

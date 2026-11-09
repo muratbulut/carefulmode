@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FileText, Filter, LockKeyhole, Mail, TriangleAlert, Users, Wrench } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { Mascot, mascotMoods } from "@/components/mascot/Mascot";
 import { format, getMessages } from "@/lib/i18n";
 import { routes } from "@/lib/navigation";
 import { ConnectionAlert } from "./ConnectionBanner";
@@ -41,6 +42,13 @@ export function StatusPreview() {
     <div className="grid items-start gap-x-[22px] gap-y-[26px] lg:grid-cols-2">
       <Section title={p.loading.title} description={p.loading.description}>
         <Loading text={p.loading.text} />
+      </Section>
+      <Section title={p.mascot.title} description={p.mascot.description}>
+        <div className="grid grid-cols-4 gap-4 rounded-[20px] border border-card bg-surface-deep p-5 sm:grid-cols-6">
+          {mascotMoods.map((mood) => (
+            <Mascot key={mood} mood={mood} className="h-auto w-full" />
+          ))}
+        </div>
       </Section>
       <Section title={p.offline.title} description={p.offline.description}>
         <div className="rounded-[20px] border border-card bg-surface-deep p-5">

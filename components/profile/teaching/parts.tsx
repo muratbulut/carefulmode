@@ -29,7 +29,7 @@ export function PrimaryButton({ ready, pending, children }: { ready: boolean; pe
     >
       {pending ? (
         <>
-          <Spinner className={ready ? "border-on-accent/30 border-t-on-accent" : undefined} />
+          <Spinner tone={ready ? "onAccent" : "plain"} />
           {getMessages().auth.working}
         </>
       ) : (

@@ -1,6 +1,7 @@
 "use client";
 
-import { Fragment, useEffect, useRef, type MouseEvent, type PointerEvent, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, type FocusEvent, type MouseEvent, type PointerEvent, type ReactNode } from "react";
+import { lookAt } from "@/components/mascot/RoomMascot";
 import { cn } from "@/lib/utils";
 
 // Lab sahnelerinin (Postam, Mesajlar, sahte sayfa) ortak parçaları. Sahnedeki uygulamalar
@@ -151,10 +152,23 @@ export function useLinkPeek(onPeek: (show: boolean) => void) {
     timer.current = null;
   };
   const handlers = {
-    onMouseEnter: () => onPeek(true),
-    onMouseLeave: () => onPeek(false),
-    onFocus: () => onPeek(true),
-    onBlur: () => onPeek(false),
+    // Şeritteki maskot da bağlantıya bakar (RoomMascot); her bağlantıya aynı bakar.
+    onMouseEnter: (e: MouseEvent<HTMLElement>) => {
+      onPeek(true);
+      lookAt(e.currentTarget);
+    },
+    onMouseLeave: () => {
+      onPeek(false);
+      lookAt(null);
+    },
+    onFocus: (e: FocusEvent<HTMLElement>) => {
+      onPeek(true);
+      lookAt(e.currentTarget);
+    },
+    onBlur: () => {
+      onPeek(false);
+      lookAt(null);
+    },
     onPointerDown: (e: PointerEvent) => {
       if (e.pointerType !== "touch") return;
       pressed.current = false;

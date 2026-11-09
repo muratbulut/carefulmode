@@ -214,7 +214,7 @@ export function AddTeamMemberDialog({ open, onClose, onAdded }: { open: boolean;
             ready ? "bg-accent text-on-accent" : "bg-card text-fg-4",
           )}
         >
-          {pending ? <Spinner className="border-on-accent/30 border-t-on-accent" /> : null}
+          {pending ? <Spinner tone="onAccent" /> : null}
           {pending ? a.submitting : a.submit}
         </button>
       </div>

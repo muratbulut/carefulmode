@@ -189,7 +189,7 @@ export function EditTeamMemberDialog({
               disabled={pending}
               className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-danger text-sm font-bold text-on-danger"
             >
-              {pending ? <Spinner className="border-on-danger/30 border-t-on-danger" /> : null}
+              {pending ? <Spinner tone="onDanger" /> : null}
               {e.removeConfirm}
             </button>
           </div>
@@ -218,7 +218,7 @@ export function EditTeamMemberDialog({
             disabled={pending}
             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-sm font-bold text-on-accent disabled:opacity-70"
           >
-            {pending ? <Spinner className="border-on-accent/30 border-t-on-accent" /> : null}
+            {pending ? <Spinner tone="onAccent" /> : null}
             {pending ? e.saving : e.save}
           </button>
         </div>

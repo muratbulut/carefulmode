@@ -74,7 +74,7 @@ export function JoinInvite({ code }: { code: string }) {
         </Link>
       ) : (
         <button type="button" onClick={join} disabled={pending} aria-busy={pending} className={primaryLinkClass}>
-          {pending ? <Spinner className="size-4 border-on-accent/30 border-t-on-accent" /> : null}
+          {pending ? <Spinner tone="onAccent" /> : null}
           {m.code.join}
         </button>
       )}

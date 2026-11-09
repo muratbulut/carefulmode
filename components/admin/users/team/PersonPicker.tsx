@@ -72,7 +72,7 @@ export function PersonPicker<P extends PickablePerson>({
       </span>
       {loading ? (
         <span role="status" className="inline-flex items-center gap-2 text-[13px] text-fg-3">
-          <Spinner className="size-3.5" />
+          <Spinner />
           {t.search.searching}
         </span>
       ) : people === null ? (
