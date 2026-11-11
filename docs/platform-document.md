@@ -426,7 +426,7 @@ Tablo ve alan adları İngilizcedir; dokümandaki Türkçe karşılıkları `doc
 
 | Tablo | Ana alanlar | Açıklama |
 | --- | --- | --- |
-| `User` (kullanıcı) | id, displayName, email, emailVerified, role (STUDENT / TEACHER / ADMIN / DELETED), birthYear, educationStatus, gradeLevel, schoolId? (öğretmenin okulu), avatar, theme (DARK / GRAY), kvkkConsentAt, createdAt, lastActiveAt, suspended, deletionScheduledAt (hesap silme isteği) | Platform kullanıcısı. Yönetim ekibi üyeliği `TeamPermission`, okul sorumluluğu `School.coordinatorId` ile anlaşılır |
+| `User` (kullanıcı) | id, displayName, email, emailVerified, role (STUDENT / TEACHER / ADMIN / DELETED), birthYear, educationStatus, gradeLevel, schoolId? (öğretmenin okulu), avatar, theme (DARK / GRAY), kvkkConsentAt, createdAt, lastActiveAt, lastSignInAt, previousSignInAt ("Son girişin" şeridi, bir kez), suspended, deletionScheduledAt (hesap silme isteği) | Platform kullanıcısı. Yönetim ekibi üyeliği `TeamPermission`, okul sorumluluğu `School.coordinatorId` ile anlaşılır |
 | `Session`, `Account`, `Verification` | Better Auth standardı | Oturum, şifre özeti, e-posta kodları |
 | `RateLimit` (istek sayacı) | key, count, resetAt | Giriş, kayıt ve kod istek sınırlarının sayaçları; süresi dolan satırlar saatlik temizlikte silinir |
 | `TeamPermission` (ekip izni) | userId, permission (APPLICATIONS / LAB\_EDITING / LAB\_PUBLISHING / TIPS / NEWS / AUDIT\_LOG / ROLES), grantedById, grantedAt | Yönetim ekibi izinleri. Öğrenciye sadece TIPS ve NEWS verilebilir, ROLES sadece yöneticide olur |

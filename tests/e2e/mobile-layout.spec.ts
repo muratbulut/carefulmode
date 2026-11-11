@@ -260,8 +260,8 @@ type StudentData = { code: string; report: string };
 
 const trainingPath = "/oda/oltalama-egitimi/oyna";
 const playPath = "/oda/sahte-kargo-maili/oyna";
-/** Telefondaki "Bugün" şeridinin n. kartı (gündem haberi yoksa 0 ipucu, 1 rozet, 2 sınıf). */
-const todayCard = (page: Page, n: number) => page.getByRole("region", { name: "Bugün" }).getByRole("listitem").nth(n);
+/** Telefondaki "Bugün" bölümü: sınıf ve ödev, sonra günün ipucu (hoca öncesi kontrol, 26). */
+const todaySection = (page: Page) => page.getByRole("region", { name: "Bugün" }).filter({ visible: true });
 const next = (page: Page) => page.getByTestId("training-player").getByRole("button", { name: /^(Devam|Bitir)$/ }).click();
 /**
  * Eşleştirme ya da boşluk doldurma kartında sıradaki `count` yere kutudaki seçenekleri sırayla
@@ -376,8 +376,7 @@ const studentScreens: Screen<StudentData>[] = [
   { name: "Eğitim, son kart", open: next },
   { name: "Eğitim, bitti", open: next },
   { name: "Ana sayfa", path: "/" },
-  { name: "Ana sayfa, Bugün şeridinde rozet", path: "/", open: (page) => todayCard(page, 1).scrollIntoViewIfNeeded() },
-  { name: "Ana sayfa, Bugün şeridinde sınıf", path: "/", open: (page) => todayCard(page, 2).scrollIntoViewIfNeeded() },
+  { name: "Ana sayfa, sınıf ve günün ipucu", path: "/", open: (page) => todaySection(page).scrollIntoViewIfNeeded() },
   { name: "Ana sayfa, hesap menüsü", path: "/", open: (page) => page.getByRole("banner").getByRole("button", { name: "Hesap menüsü" }).click() },
   { name: "Yol haritası", path: "/yol-haritasi" },
   { name: "Mahalle", path: "/yol-haritasi/oltalama-limani" },

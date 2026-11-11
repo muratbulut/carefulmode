@@ -1,7 +1,8 @@
 "use client";
 
+import { Clock } from "lucide-react";
 import { useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
-import { codeLength } from "@/lib/account/shared";
+import { codeLength, codeValidMinutes } from "@/lib/account/shared";
 import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +11,7 @@ export type CodeState = "idle" | "ok" | "bad";
 /**
  * 6 kutulu kod girişi (Tur 1, ekran 7). Her rakamdan sonra imleç sonraki kutuya geçer,
  * kodun tamamı tek seferde yapıştırılabilir, telefonda klavye mailden gelen kodu önerir.
- * Değer formda "code" adlı gizli alanla gönderilir.
+ * Değer formda "code" adlı gizli alanla gönderilir. Altında kodun kaç dakika geçerli olduğu yazar.
  */
 export function CodeInput({
   label,
@@ -114,6 +115,10 @@ export function CodeInput({
           />
         ))}
       </div>
+      <p className="mt-2.5 mb-0 flex items-center gap-1.5 text-[13px] leading-[1.45] text-fg-3">
+        <Clock className="size-3.5 flex-none" strokeWidth={2.2} aria-hidden="true" />
+        {format(t.validFor, { minutes: codeValidMinutes })}
+      </p>
     </fieldset>
   );
 }

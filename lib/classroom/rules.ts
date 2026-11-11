@@ -29,6 +29,11 @@ export function normalizeJoinCode(value: string): string {
   return value.replace(/[\s-]/g, "").toUpperCase();
 }
 
+/** Kutuya yazılanı koda çevirir: büyük harf, yalnızca harf ve rakam, en fazla 6 karakter (tahtadaki gibi). */
+export function cleanCodeInput(value: string) {
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, joinCodeLength);
+}
+
 export function isJoinCode(value: string): boolean {
   return value.length === joinCodeLength && [...value].every((ch) => joinCodeAlphabet.includes(ch));
 }

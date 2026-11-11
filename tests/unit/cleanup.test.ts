@@ -102,6 +102,8 @@ describe("hesap silme", () => {
         avatar: null,
         kvkkConsentAt: null,
         lastActiveAt: null,
+        lastSignInAt: null,
+        previousSignInAt: null,
         suspended: true,
         deletionScheduledAt: null,
       },

@@ -15,8 +15,8 @@ import { JoinCodeForm } from "./JoinCodeForm";
 export type HomeClassData = { classes: StudentClass[]; assignments: AssignmentView[] };
 
 /**
- * Ana sayfadaki sınıf kartı (Ana-Sayfa-Odev, -Mobil). Sınıfı yoksa kesikli çerçeveli "Sınıfına
- * katıl": Kod gir → kod kutusu → katıldın. Sınıftaysa öğretmeni, gizlilik sözü ve
+ * Ana sayfadaki sınıf kartı (Ana-Sayfa-Odev, -Mobil). Sınıfı yoksa kesikli çerçeveli küçük
+ * "Sınıfına katıl": kod kutusu doğrudan açık (4 Kasım, 26; doğrulanmamış hesapta önce "Kod gir"). Sınıftaysa öğretmeni, gizlilik sözü ve
  * öğretmeninin verdiği açık ödevler (en acil olan önce). Öğrenci sınıftaki başka kimseyi görmez.
  */
 export function ClassCard({ data, verified, className }: { data: HomeClassData; verified: boolean; className?: string }) {
@@ -86,8 +86,8 @@ export function ClassCard({ data, verified, className }: { data: HomeClassData; 
             {t.verify}
           </Link>
         </div>
-      ) : open ? (
-        <JoinCodeForm autoFocus onJoined={(classroom) => setJoined(classroom)} />
+      ) : verified || open ? (
+        <JoinCodeForm autoFocus={open} onJoined={(classroom) => setJoined(classroom)} />
       ) : (
         <button
           type="button"

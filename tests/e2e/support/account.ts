@@ -66,13 +66,14 @@ async function resetIpLimits() {
 }
 
 /** Kayıt formunu doldurur ve gönderir; doğrulama sayfasına gelindiğini bekler. */
-export async function signUp(page: Page, email: string, { next }: { next?: string } = {}) {
+export async function signUp(page: Page, email: string, { next, classCode }: { next?: string; classCode?: string } = {}) {
   await resetIpLimits();
   await page.goto(next ? `/kayit?sonra=${encodeURIComponent(next)}` : "/kayit");
   await page.getByLabel("Görünen ad").fill("Deneme Öğrenci");
   await page.getByLabel("E-posta").fill(email);
   await page.getByLabel("Şifre", { exact: true }).fill(strongPassword);
   await page.getByLabel("Doğum yılı").selectOption("2000");
+  if (classCode) await page.getByLabel(/Sınıf kodu/).fill(classCode);
   await page.getByRole("checkbox", { name: /KVKK aydınlatma metnini/ }).check();
   await page.getByRole("button", { name: "Hesabımı oluştur" }).click();
   await page.waitForURL(/\/dogrula/);

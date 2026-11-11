@@ -39,6 +39,9 @@ export function withNext(path: string, next?: string) {
 /** E-posta kodunun hane sayısı (lib/auth.ts codeRules ile aynı). */
 export const codeLength = 6;
 
+/** E-posta kodunun geçerlilik süresi, dakika (lib/auth.ts codeRules; kod kutusunun altında yazar). */
+export const codeValidMinutes = 10;
+
 /** Sunucunun verdiği bekleme süresini tarayıcıda geri sayıma çevirir (bkz. useSecondsLeft). */
 export type Deadline = { from: number; until: number };
 

@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 import { signUp } from "@/lib/account/actions";
+import { cleanCodeInput } from "@/lib/classroom/rules";
 import { deadlineFrom, formatClock, idleState, isMinor, maxBirthYear, minBirthYear, type FormState } from "@/lib/account/shared";
 import { format, getMessages, rich } from "@/lib/i18n";
 import { routes } from "@/lib/navigation";
+import { cn } from "@/lib/utils";
 import { evaluatePassword, personalTokens } from "@/lib/password-strength";
 import { EducationFields } from "./EducationFields";
 import { Field, Notice, PasswordInput, SubmitButton, describedBy, inputClass, selectClass } from "./fields";
@@ -30,6 +32,9 @@ export function SignUpForm({ next }: { next?: string }) {
   const [year, setYear] = useState("");
   const [kvkk, setKvkk] = useState(false);
   const [guardian, setGuardian] = useState(false);
+  const [classCode, setClassCode] = useState("");
+  // Katılma bağlantısından gelen (/katil/<kod>) kodu zaten getirdi; kutu çıkmaz.
+  const askClassCode = !next?.startsWith("/katil/");
 
   const evaluation = useMemo(() => evaluatePassword(password, personalTokens(name, email)), [password, name, email]);
   const years = useMemo(() => {
@@ -116,6 +121,33 @@ export function SignUpForm({ next }: { next?: string }) {
       </Field>
 
       <EducationFields error={errors.department} />
+
+      {askClassCode ? (
+        <Field
+          id="classCode"
+          label={
+            <>
+              {m.classCode} <span className="font-medium text-fg-4">{m.optional}</span>
+            </>
+          }
+          hint={m.classCodeHint}
+          error={errors.classCode}
+        >
+          <input
+            id="classCode"
+            name="classCode"
+            value={classCode}
+            onChange={(e) => setClassCode(cleanCodeInput(e.target.value))}
+            placeholder={t.studentClass.code.placeholder}
+            autoComplete="off"
+            autoCapitalize="characters"
+            autoCorrect="off"
+            spellCheck={false}
+            className={cn(inputClass, "font-mono tracking-[3px] uppercase")}
+            {...describedBy("classCode", { hint: m.classCodeHint, error: errors.classCode })}
+          />
+        </Field>
+      ) : null}
 
       {minor ? (
         <label className="flex cursor-pointer items-start gap-3 text-sm leading-normal text-fg-2 anim-pop">

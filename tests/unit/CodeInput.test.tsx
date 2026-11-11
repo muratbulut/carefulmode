@@ -52,3 +52,36 @@ describe("kod kutuları", () => {
     expect(hidden.value).toBe("1");
   });
 });
+
+describe("kodun geçerlilik süresi", () => {
+  it("kutuların altında kodun kaç dakika geçerli olduğu yazar (lib/auth.ts ile aynı süre)", async () => {
+    setup();
+    expect(screen.getByText("Kod 10 dakika geçerli.")).toBeInTheDocument();
+    const { codeRules } = await import("@/lib/auth");
+    const { codeValidMinutes } = await import("@/lib/account/shared");
+    expect(codeRules.expiresInSec).toBe(codeValidMinutes * 60);
+  });
+});
+
+describe("şifre kutusu", () => {
+  it("Caps Lock açıkken 'Büyük harf açık' yazar, kapanınca ya da kutudan çıkınca kaybolur", async () => {
+    const { PasswordInput } = await import("@/components/auth/fields");
+    render(<PasswordInput aria-label="Şifre" />);
+    const input = screen.getByLabelText("Şifre");
+    // jsdom'da Caps Lock yok: olayın getModifierState'i elle verilir.
+    const key = (type: "keydown" | "keyup", caps: boolean) => {
+      const event = new KeyboardEvent(type, { key: caps ? "A" : "a", bubbles: true });
+      Object.defineProperty(event, "getModifierState", { value: (k: string) => caps && k === "CapsLock" });
+      fireEvent(input, event);
+    };
+    expect(screen.queryByText(/Büyük harf açık/)).not.toBeInTheDocument();
+    key("keyup", true);
+    expect(screen.getByRole("status")).toHaveTextContent("Büyük harf açık (Caps Lock).");
+    key("keyup", false);
+    expect(screen.queryByText(/Büyük harf açık/)).not.toBeInTheDocument();
+    key("keydown", true);
+    expect(screen.getByText(/Büyük harf açık/)).toBeInTheDocument();
+    fireEvent.blur(input);
+    expect(screen.queryByText(/Büyük harf açık/)).not.toBeInTheDocument();
+  });
+});

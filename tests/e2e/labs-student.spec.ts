@@ -21,16 +21,17 @@ test.describe("öğrenci", () => {
     await expect(page.getByText(/Seviye \d+\/\d+|\d+\/10 seviye/)).toHaveCount(0);
     await expect(page.getByRole("list", { name: "İlerlemen" }).filter({ visible: true })).toContainText("biten oda");
 
-    // Yönetim testleri aynı anda başka mahallede lab yayınlayabilir; bu yüzden "sıradaki"nin
-    // hangi mahallede olduğuna değil, tek bir mahallede olduğuna bakılır.
-    const roadmap = page.getByRole("region", { name: "Yol haritan" });
-    await expect(roadmap.getByRole("link", { name: /Oltalama Limanı/ })).toHaveAttribute("href", "/yol-haritasi/oltalama-limani");
-    await expect(roadmap.getByRole("link", { name: /Sıradaki: / })).toHaveCount(1);
+    // "Yol haritan" ve "Sıradaki rozetin" ana sayfadan kalktı (4 Kasım; yol haritası üst menüde).
+    await expect(page.getByRole("region", { name: "Yol haritan" })).toHaveCount(0);
+    await expect(visible(page, "Sıradaki rozetin")).toHaveCount(0);
     await expect(page.getByRole("region", { name: "Son raporların" })).toContainText("Raporun burada olacak");
 
-    // Kaldığın yerden devam et: yeni öğrencide sıradaki lab (eğitim labıysa doğrudan kartlar).
-    const scope = isMobile ? page.getByRole("navigation", { name: "Alt menü" }) : page.getByRole("region", { name: "Deneme Öğrenci" });
-    await expect(scope.getByRole("link", { name: "Kaldığın yerden devam et" })).toHaveAttribute("href", /^\/oda\/[a-z0-9-]+(\/oyna)?$/);
+    // Devam düğmesi: yeni öğrencide sıradaki lab (eğitim labıysa doğrudan kartlar). Masaüstünde
+    // açacağı odanın adını yazar; telefonda alt menünün ortasında.
+    const resume = isMobile
+      ? page.getByRole("navigation", { name: "Alt menü" }).getByRole("link", { name: "Kaldığın yerden devam et" })
+      : page.getByRole("region", { name: "Deneme Öğrenci" }).getByRole("link", { name: /^Devam et: / });
+    await expect(resume).toHaveAttribute("href", /^\/oda\/[a-z0-9-]+(\/oyna)?$/);
   });
 
   test("senaryo labı eğitim bitmeden kilitli, bitince açılır", async ({ page, isMobile }) => {

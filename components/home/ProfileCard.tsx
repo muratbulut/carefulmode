@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { CheckCircle2, FileText, Layers, Pencil, Play, Plus } from "lucide-react";
-import type { ReactNode } from "react";
 import { BadgeMedal } from "@/components/profile/BadgeMedal";
 import { LevelBar, LevelPill, PointsPill } from "@/components/profile/LevelSummary";
 import { brand, LogoLineIcon, LogoMark } from "@/lib/brand";
@@ -23,6 +22,10 @@ export type ProfileCardData = {
   earnedCount: number;
   badgeTotal: number;
   continueHref: string | null;
+  /** Devam düğmesinin açacağı odanın adı (düğmede yazar). */
+  continueName: string | null;
+  /** Öğretmeninin ödevi aynı odayı gösteriyorsa düğme çizilmez. */
+  hideContinue: boolean;
 };
 
 const statIcons = { labsDone: CheckCircle2, cardsRead: Layers, reports: FileText } as const;
@@ -37,7 +40,7 @@ const statTones = {
  * devam et ve rozet vitrini. Telefonda sıkışık hali (M2): vitrin küçük madalyalarla, devam
  * düğmesi alt menünün ortasında.
  */
-export function ProfileCard({ data, footer, className }: { data: ProfileCardData; footer?: ReactNode; className?: string }) {
+export function ProfileCard({ data, className }: { data: ProfileCardData; className?: string }) {
   const t = getMessages();
   const h = t.home;
   const statKeys = ["labsDone", "cardsRead", "reports"] as const;
@@ -129,13 +132,17 @@ export function ProfileCard({ data, footer, className }: { data: ProfileCardData
           })}
         </ul>
         <MiniShowcase data={data} />
-        <Link
-          href={data.continueHref ?? routes.labs}
-          className="hidden h-12 items-center gap-2.5 rounded-xl bg-accent px-5 text-base font-bold text-on-accent no-underline transition-[filter] hover:brightness-110 lg:inline-flex"
-        >
-          <Play className="size-4 fill-current" strokeWidth={2.4} aria-hidden="true" />
-          {data.continueHref ? t.nav.continue : t.roadmap.browseLabs}
-        </Link>
+        {data.hideContinue ? null : (
+          <Link
+            href={data.continueHref ?? routes.labs}
+            className="hidden h-12 max-w-full items-center gap-2.5 self-start rounded-xl bg-accent px-5 text-base font-bold text-on-accent no-underline transition-[filter] hover:brightness-110 lg:inline-flex"
+          >
+            <Play className="size-4 flex-none fill-current" strokeWidth={2.4} aria-hidden="true" />
+            <span className="truncate">
+              {data.continueHref ? (data.continueName ? format(h.continueTo, { name: data.continueName }) : t.nav.continue) : t.roadmap.browseLabs}
+            </span>
+          </Link>
+        )}
       </div>
 
       <Divider className="hidden lg:block" />
@@ -145,7 +152,7 @@ export function ProfileCard({ data, footer, className }: { data: ProfileCardData
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="m-0 text-base font-bold">{h.showcase}</h2>
           <Link href={badgesHref} className="text-[13px] font-bold no-underline hover:underline">
-            {format(h.allBadges, { n: data.earnedCount, total: data.badgeTotal })}
+            {h.allBadges}
           </Link>
         </div>
         <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
@@ -172,8 +179,6 @@ export function ProfileCard({ data, footer, className }: { data: ProfileCardData
         </ul>
       </div>
 
-      {/* Masaüstü: vitrinin altında "Sıradaki rozetin"; kart sağ sütun kadar uzayınca altı boş kalmasın. */}
-      {footer ? <div className="relative mt-auto hidden lg:block">{footer}</div> : null}
     </section>
   );
 }
