@@ -125,6 +125,37 @@ test.describe("hesap", () => {
     await page.waitForURL("/");
   });
 
+  test("girişten sonra ana sayfada bir kez önceki girişin zamanı çıkar; Ben değildim şifre değiştirmeye götürür", async ({ page, context }) => {
+    const email = uniqueEmail("songiris");
+    await signUp(page, email);
+    await verify(page, email);
+    await page.waitForURL("/");
+    // Kayıt sonrası ilk açılışta önceki giriş yok.
+    await expect(page.getByTestId("last-sign-in")).toHaveCount(0);
+
+    await signOutHere(context);
+    await page.goto("/giris");
+    // Caps Lock uyarısı kutunun altında.
+    const password = page.getByLabel("Şifre", { exact: true });
+    // Başsız tarayıcı Caps Lock'u bildirmez: tuş olayı Caps Lock açık hâliyle gönderilir (sayfa hazır olana dek).
+    await expect(async () => {
+      await password.evaluate((el) => el.dispatchEvent(new KeyboardEvent("keyup", { key: "A", bubbles: true, modifierCapsLock: true })));
+      await expect(page.getByText("Büyük harf açık (Caps Lock).")).toBeVisible({ timeout: 500 });
+    }).toPass();
+
+    await signIn(page, email, strongPassword);
+    await page.waitForURL("/");
+    const strip = page.getByTestId("last-sign-in");
+    await expect(strip).toContainText("Son girişin:");
+    await expect(strip.getByRole("link", { name: "Ben değildim" })).toHaveAttribute("href", "/profil?bolum=guvenlik");
+
+    // Bir kez: sayfa yenilenince gelmez.
+    await page.waitForLoadState("networkidle");
+    await page.reload();
+    await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+    await expect(page.getByTestId("last-sign-in")).toHaveCount(0);
+  });
+
   test("şifre sıfırlama: hesap olmasa da aynı ekran, hesap varsa kodla yeni şifre", async ({ page, context }) => {
     async function requestCode(email: string) {
       await page.goto("/sifre-sifirla");
@@ -154,6 +185,7 @@ test.describe("hesap", () => {
     await page.getByLabel("Yeni şifre").fill(newPassword);
     await page.getByRole("button", { name: "Şifremi değiştir" }).click();
     await expect(page.getByRole("heading", { name: "Şifren değişti" })).toBeVisible();
+    await expect(page.getByText("Bütün cihazlarından çıkış yapıldı.")).toBeVisible();
 
     await page.getByRole("link", { name: "Giriş yap" }).click();
     await page.waitForURL("**/giris");

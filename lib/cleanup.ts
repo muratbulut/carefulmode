@@ -89,6 +89,8 @@ async function anonymize(tx: Tx, userId: string) {
       avatar: null,
       kvkkConsentAt: null,
       lastActiveAt: null,
+      lastSignInAt: null,
+      previousSignInAt: null,
       suspended: true,
       deletionScheduledAt: null,
     },

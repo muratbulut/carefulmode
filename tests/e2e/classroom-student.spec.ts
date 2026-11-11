@@ -81,7 +81,10 @@ async function resetJoinIpLimit() {
 const classCard = (page: Page) => page.getByRole("region", { name: "Sınıfın" }).filter({ visible: true });
 
 async function joinFromCard(card: Locator, code: string) {
-  await card.getByRole("button", { name: "Kod gir" }).click();
+  // Sınıfı olmayan doğrulanmış öğrencide kod kutusu açık gelir; sınıfı olanda "Kod gir" açar.
+  const open = card.getByRole("button", { name: "Kod gir" });
+  await expect(card.getByLabel("Sınıf kodu").or(open).first()).toBeVisible();
+  if (await open.isVisible()) await open.click();
   await card.getByLabel("Sınıf kodu").fill(code);
   await card.getByRole("button", { name: "Katıl", exact: true }).click();
 }
@@ -107,7 +110,7 @@ test.describe("öğrencinin sınıfı", () => {
 
     const card = classCard(page);
     await expect(card.getByRole("heading")).toHaveText("Sınıfına katıl");
-    await expect(card).toContainText("Öğretmeninin verdiği kodu gir");
+    await expect(card).toContainText("Öğretmenin bir kod verdiyse buraya yaz");
     // Küçük harf ve tireyle yazılan kod da kabul edilir.
     await joinFromCard(card, `${classroom.code.slice(0, 3).toLowerCase()}-${classroom.code.slice(3)}`);
 
@@ -138,7 +141,8 @@ test.describe("öğrencinin sınıfı", () => {
     const open = await createClassroom();
     await signUpVerified(page, uniqueEmail("yanlis"));
     const card = classCard(page);
-    await card.getByRole("button", { name: "Kod gir" }).click();
+    // Sınıfı olmayan doğrulanmış öğrencide kod kutusu açık gelir (hoca öncesi kontrol, 26).
+    await expect(card.getByRole("button", { name: "Kod gir" })).toHaveCount(0);
     const input = card.getByLabel("Sınıf kodu");
     const join = card.getByRole("button", { name: "Katıl", exact: true });
     const notFound = "Bu kodla bir sınıf bulunamadı. Kodu öğretmeninden kontrol et.";
@@ -218,6 +222,39 @@ test.describe("öğrencinin sınıfı", () => {
     await page.getByRole("main").getByRole("button", { name: "Katıl", exact: true }).click();
     await expect(page.getByRole("main").getByRole("status")).toContainText(`${classroom.name} sınıfına katıldın`);
     expect(await membershipCount(email)).toBe(1);
+  });
+
+  test("kayıtta sınıf kodunu yazan öğrenci doğrulayınca sınıf sayfasına gelir; bağlantıdan gelende kutu yok", async ({ page }) => {
+    const classroom = await createClassroom();
+
+    // Yanlış biçimdeki kod alanın altında söylenir, kayıt olmaz.
+    await page.goto("/kayit");
+    const field = page.getByLabel(/Sınıf kodu/);
+    await field.fill("ab-1");
+    await expect(field).toHaveValue("AB1");
+    await page.getByLabel("Görünen ad").fill("Deneme Öğrenci");
+    await page.getByLabel("E-posta").fill(uniqueEmail("kodbicim"));
+    await page.getByLabel("Şifre", { exact: true }).fill(strongPassword);
+    await page.getByLabel("Doğum yılı").selectOption("2000");
+    await page.getByRole("checkbox", { name: /KVKK aydınlatma metnini/ }).check();
+    await page.getByRole("button", { name: "Hesabımı oluştur" }).click();
+    await expect(page.getByText("Sınıf kodu 6 karakterdir: harf ve rakam. Kodun yoksa boş bırak.")).toBeVisible();
+    await expect(page).toHaveURL(/\/kayit$/);
+
+    const email = uniqueEmail("kayitkod");
+    await signUp(page, email, { classCode: classroom.code.toLowerCase() });
+    expect(new URL(page.url()).searchParams.get("sonra")).toBe(`/katil/${classroom.code}`);
+    await typeCode(page, await waitForCode(email));
+    await page.getByRole("button", { name: "Doğrula", exact: true }).click();
+    await page.waitForURL(`/katil/${classroom.code}`);
+    await page.getByRole("main").getByRole("button", { name: "Katıl", exact: true }).click();
+    await expect(page.getByRole("main").getByRole("status")).toContainText(`${classroom.name} sınıfına katıldın`);
+    expect(await membershipCount(email)).toBe(1);
+
+    await signOutHere(page.context());
+    await page.goto(`/kayit?sonra=${encodeURIComponent(`/katil/${classroom.code}`)}`);
+    await expect(page.getByLabel("Görünen ad")).toBeVisible();
+    await expect(page.getByLabel(/Sınıf kodu/)).toHaveCount(0);
   });
 
   test("e-postası doğrulanmamış öğrenci katılamaz; geçersiz bağlantı kodu söylenir", async ({ page }) => {

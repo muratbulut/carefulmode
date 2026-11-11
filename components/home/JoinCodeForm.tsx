@@ -4,15 +4,10 @@ import { useEffect, useId, useRef, useState, useTransition, type FormEvent } fro
 import { inputClass } from "@/components/auth/fields";
 import { Spinner } from "@/components/status/Spinner";
 import { joinClassroom } from "@/lib/classroom/student-actions";
-import { isJoinCode, joinCodeLength } from "@/lib/classroom/rules";
+import { cleanCodeInput, isJoinCode } from "@/lib/classroom/rules";
 import type { StudentClass } from "@/lib/classroom/student";
 import { getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-
-/** Yazılanı koda çevirir: büyük harf, yalnızca harf ve rakam, en fazla 6 karakter (tahtadaki gibi). */
-export function cleanCodeInput(value: string) {
-  return value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, joinCodeLength);
-}
 
 /**
  * Sınıf kodu kutusu ve "Katıl" (Ana-Sayfa-Odev, Ogretmenlik-Son). Kod 6 karakter olunca düğme

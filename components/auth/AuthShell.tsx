@@ -61,18 +61,19 @@ export function AuthCard({ children, narrow = false }: { children: ReactNode; na
   );
 }
 
-/** Giriş ve doğrulama: solda form, sağda iplikli ipucu paneli; telefonda ipucu formun altında. */
+/**
+ * Giriş ve doğrulama: solda form, sağda ipucu kartı; telefonda ipucu formun altında.
+ * Masaüstünde kartın dış çerçevesi yok; kart formun üstüyle ve altıyla hizalı uzar
+ * (hoca öncesi kontrol, 23).
+ */
 export function AuthSplit({ form, panel }: { form: ReactNode; panel: ReactNode }) {
   return (
-    <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-4 pt-6 pb-10 md:px-6 md:pt-10 md:pb-14 lg:flex-row lg:items-stretch">
+    <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-4 pt-6 pb-10 md:px-6 md:pt-10 md:pb-14 lg:flex-row lg:items-stretch lg:gap-16">
       <div className="flex flex-1 justify-center lg:basis-[460px] lg:items-start">
         <div className="flex w-full max-w-[500px] flex-col gap-5 md:gap-[22px] lg:pt-2">{form}</div>
       </div>
-      <aside className="relative flex flex-1 items-center lg:min-h-[620px] lg:basis-[420px] lg:overflow-hidden lg:rounded-3xl lg:border lg:border-card lg:bg-surface-raised lg:p-7">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden lg:block">
-          <FlowingThreads pattern="mobile" />
-        </div>
-        <div className="relative mx-auto w-full max-w-[440px]">{panel}</div>
+      <aside className="flex flex-1 lg:basis-[420px] lg:pt-2">
+        <div className="mx-auto flex w-full max-w-[460px] flex-col [&>*]:lg:flex-1">{panel}</div>
       </aside>
     </div>
   );

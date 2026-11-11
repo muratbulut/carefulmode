@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronDown, Link2, Search, X } from "lucide-react";
+import { ChevronDown, Search, X } from "lucide-react";
 import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import { brand } from "@/lib/brand";
 import { format, getMessages } from "@/lib/i18n";
@@ -57,7 +57,6 @@ export function FaqExplorer({ initialTopic, contact, noScriptList = false }: Pro
   const [topic, setTopic] = useState<FaqTopic>(initialTopic);
   const [openId, setOpenId] = useState<FaqQuestionId | null>(null);
   const [query, setQuery] = useState("");
-  const [copied, setCopied] = useState<{ id: FaqQuestionId; ok: boolean } | null>(null);
   const baseId = useId();
   const headingId = `${baseId}-heading`;
 
@@ -76,11 +75,6 @@ export function FaqExplorer({ initialTopic, contact, noScriptList = false }: Pro
     return () => window.removeEventListener("hashchange", openFromHash);
   }, []);
 
-  useEffect(() => {
-    if (!copied) return;
-    const timer = setTimeout(() => setCopied(null), 1800);
-    return () => clearTimeout(timer);
-  }, [copied]);
 
   const hits = useMemo(() => searchFaq(query), [query]);
   const searching = normalizeQuery(query) !== "";
@@ -91,16 +85,6 @@ export function FaqExplorer({ initialTopic, contact, noScriptList = false }: Pro
     setQuery("");
     setOpenId(null);
     window.history.replaceState(null, "", faqHref(next));
-  }
-
-  async function copyLink(question: FaqQuestion) {
-    const url = `${window.location.origin}${faqHref(null)}#${question.slug}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied({ id: question.id, ok: true });
-    } catch {
-      setCopied({ id: question.id, ok: false });
-    }
   }
 
   return (
@@ -179,8 +163,6 @@ export function FaqExplorer({ initialTopic, contact, noScriptList = false }: Pro
                 question={question}
                 open={openId === question.id}
                 onToggle={() => setOpenId(openId === question.id ? null : question.id)}
-                copied={copied?.id === question.id ? copied.ok : null}
-                onCopy={() => copyLink(question)}
                 showTopic={searching}
               />
             ))}
@@ -200,7 +182,7 @@ export function FaqExplorer({ initialTopic, contact, noScriptList = false }: Pro
               <h2 className="m-0 font-heading text-[22px] font-bold">{t.topics[key].name}</h2>
               <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
                 {questionsOf(key).map((question) => (
-                  <QuestionRow key={question.id} question={question} open onToggle={() => {}} copied={null} onCopy={() => {}} showTopic={false} idPrefix="tum-" />
+                  <QuestionRow key={question.id} question={question} open onToggle={() => {}} showTopic={false} idPrefix="tum-" />
                 ))}
               </ul>
             </section>
@@ -215,17 +197,17 @@ type RowProps = {
   question: FaqQuestion;
   open: boolean;
   onToggle: () => void;
-  /** Bağlantı kopyalandı mı (true), kopyalanamadı mı (false), yoksa hiç basılmadı mı (null). */
-  copied: boolean | null;
-  onCopy: () => void;
   /** Arama sonuçlarında sorunun konusu da yazar. */
   showTopic: boolean;
   /** JavaScript kapalıyken çizilen tam listede kimlikler çakışmasın diye. */
   idPrefix?: string;
 };
 
-/** Tek soru: başlığın içinde düğme (aria-expanded), altında cevap, konu etiketi ve bağlantı kopyalama. */
-function QuestionRow({ question, open, onToggle, copied, onCopy, showTopic, idPrefix = "" }: RowProps) {
+/**
+ * Tek soru: başlığın içinde düğme (aria-expanded), altında cevap ve konu etiketi. Sorunun kendi
+ * bağlantısı (#slug) çalışır; "bağlantıyı kopyala" düğmesi 4 Kasım'da kalktı (Murat).
+ */
+function QuestionRow({ question, open, onToggle, showTopic, idPrefix = "" }: RowProps) {
   const tone = topicTone[question.topic];
   const buttonId = `${idPrefix}soru-${question.slug}`;
   const panelId = `${idPrefix}cevap-${question.slug}`;
@@ -260,14 +242,6 @@ function QuestionRow({ question, open, onToggle, copied, onCopy, showTopic, idPr
             <span aria-hidden="true" className={cn("size-1.5 rounded-full", tone.dot)} />
             {t.topics[question.topic].name}
           </span>
-          <button
-            type="button"
-            onClick={onCopy}
-            className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-[10px] border-0 bg-transparent px-3 font-[inherit] text-[13px] font-bold text-accent-fg hover:bg-accent/10"
-          >
-            {copied ? <Check className="size-[15px]" strokeWidth={2.4} aria-hidden="true" /> : <Link2 className="size-[15px]" strokeWidth={2.2} aria-hidden="true" />}
-            <span aria-live="polite">{copied === true ? t.copied : copied === false ? t.copyFailed : t.copyLink}</span>
-          </button>
         </div>
       </div>
     </li>

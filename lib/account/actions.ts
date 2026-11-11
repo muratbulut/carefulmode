@@ -8,9 +8,10 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { promoteConfiguredAdmin } from "@/lib/admin/promote";
 import { codeRules, getAuth } from "@/lib/auth";
+import { isJoinCode, normalizeJoinCode } from "@/lib/classroom/rules";
 import { db } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
-import { routes } from "@/lib/navigation";
+import { paths, routes } from "@/lib/navigation";
 import { evaluatePassword, personalTokens } from "@/lib/password-strength";
 import { rateLimit, rateRules } from "@/lib/rate-limit";
 import { clientIp } from "@/lib/request";
@@ -37,6 +38,8 @@ export async function signUp(_prev: FormState, form: FormData): Promise<FormStat
   const education = field(form, "education");
   const level = field(form, "level");
   const department = field(form, "department").trim();
+  // Sınıf kodu isteğe bağlı; katılma e-posta doğrulanınca /katil/<kod> sayfasında olur.
+  const classCode = normalizeJoinCode(field(form, "classCode").slice(0, 32));
 
   const errors: FormState["fieldErrors"] = {};
   if (!nameOk(name)) errors.name = m.errors.nameLength;
@@ -49,6 +52,7 @@ export async function signUp(_prev: FormState, form: FormData): Promise<FormStat
   if (form.get("kvkk") !== "on") errors.kvkk = m.errors.kvkk;
   if (yearOk && isMinor(birthYear) && form.get("guardian") !== "on") errors.guardian = m.errors.guardian;
   if (department.length > 60) errors.department = m.errors.department;
+  if (classCode && !isJoinCode(classCode)) errors.classCode = m.errors.classCode;
   if (Object.keys(errors).length > 0 || !email.success) return { status: "error", fieldErrors: errors };
 
   const { educationStatus, gradeLevel } = parseEducation(education, level, department);
@@ -78,14 +82,23 @@ export async function signUp(_prev: FormState, form: FormData): Promise<FormStat
     return { status: "error", message: m.errors.generic };
   }
 
+  // Kayıt da bir giriştir: sonraki girişte "Son girişin" şeridi bu zamanı gösterir.
+  await db.user.updateMany({ where: { email: email.data }, data: { lastSignInAt: new Date() } });
   // Kayıtla birlikte ilk kod gitti; "tekrar gönder" için 60 sn ara buradan başlar.
   await consumeCodeSend(email.data, ip);
-  redirect(withNext(routes.verify, safeNext(field(form, "next"), "") || undefined));
+  const next = safeNext(field(form, "next"), "") || (classCode ? paths.join(classCode) : "");
+  redirect(withNext(routes.verify, next || undefined));
 }
 
 // ---------------------------------------------------------------------------
 // Giriş
 // ---------------------------------------------------------------------------
+
+/** Giriş zamanı: öncekisi ana sayfadaki "Son girişin" şeridine geçer (bir kez gösterilir). */
+async function recordSignIn(userId: string) {
+  const before = await db.user.findUnique({ where: { id: userId }, select: { lastSignInAt: true } });
+  await db.user.update({ where: { id: userId }, data: { previousSignInAt: before?.lastSignInAt ?? null, lastSignInAt: new Date() } });
+}
 
 export async function signIn(_prev: FormState, form: FormData): Promise<FormState> {
   const m = t();
@@ -130,6 +143,7 @@ export async function signIn(_prev: FormState, form: FormData): Promise<FormStat
   }
 
   await rateLimit.reset(rateRules.signInFailures, email);
+  await recordSignIn(userId);
   // ADMIN_EMAILS'teki doğrulanmış adres yönetici olur (lib/admin/promote.ts).
   await promoteConfiguredAdmin(userId);
   // 7 gün içinde giriş yapılırsa hesap silme isteği iptal olur.

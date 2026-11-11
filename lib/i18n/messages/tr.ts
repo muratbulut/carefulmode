@@ -300,6 +300,7 @@ export const tr = {
     emailPlaceholder: "ornek@eposta.com",
     password: "Şifre",
     showPassword: "Şifreyi göster",
+    capsLock: "Büyük harf açık (Caps Lock).",
     hidePassword: "Şifreyi gizle",
     tipLabel: "BUNU BİL",
     working: "Bekle…",
@@ -346,6 +347,7 @@ export const tr = {
       expired: "Kodun süresi doldu. Yeni kod iste.",
       tooManyAttempts: "Çok fazla yanlış deneme yapıldı. Yeni kod iste.",
       incomplete: "Kodun 6 rakamını da yaz.",
+      validFor: "Kod {minutes} dakika geçerli.",
     },
 
     signUp: {
@@ -375,6 +377,8 @@ export const tr = {
       departmentPlaceholder: "Örn. Bilgisayar Mühendisliği",
       kvkk: "<link>KVKK aydınlatma metnini</link> okudum, kişisel verilerimin bu metne göre işlenmesini kabul ediyorum.",
       guardian: "18 yaşından küçüğüm, velimin bilgisi dahilinde kayıt oluyorum.",
+      classCode: "Sınıf kodu",
+      classCodeHint: "Öğretmenin bir kod verdiyse yaz. E-postanı doğrulayınca sınıfa katılırsın.",
       submit: "Hesabımı oluştur",
       haveAccount: "Zaten hesabın var mı?",
       signIn: "Giriş yap",
@@ -478,7 +482,8 @@ export const tr = {
       newPassword: "Yeni şifre",
       submit: "Şifremi değiştir",
       doneTitle: "Şifren değişti",
-      doneText: "Güvenliğin için diğer cihazlardaki oturumlarını kapattık. Yeni şifrenle giriş yapabilirsin.",
+      doneText: "Yeni şifrenle giriş yapabilirsin.",
+      signedOutEverywhere: "Bütün cihazlarından çıkış yapıldı. Şifreni biri bildiyse artık o da giremez.",
       signIn: "Giriş yap",
     },
 
@@ -494,6 +499,7 @@ export const tr = {
       kvkk: "Devam etmek için aydınlatma metnini onaylaman gerekiyor.",
       guardian: "18 yaşından küçüksen velinin bilgisi olduğunu onaylaman gerekiyor.",
       department: "Bölüm adı en fazla 60 karakter olabilir.",
+      classCode: "Sınıf kodu 6 karakterdir: harf ve rakam. Kodun yoksa boş bırak.",
     },
   },
 
@@ -902,7 +908,16 @@ export const tr = {
     stats: { labsDone: "biten oda", cardsRead: "okunan kart", reports: "rapor" },
     showcase: "Rozet vitrinin",
     showcaseLabel: "Rozet vitrinin, {n}/{total} rozet",
-    allBadges: "Tüm rozetler ({n}/{total})",
+    allBadges: "Rozetlerin hepsini gör",
+    // Profil kartındaki devam düğmesi: hangi odayı açacağı yazar (4 Kasım, 26).
+    continueTo: "Devam et: {name}",
+    // Girişten sonra ana sayfada bir kez görünen şerit (hoca öncesi kontrol, 23).
+    lastSignIn: {
+      text: "Son girişin: <b>{when}</b>",
+      notMe: "Ben değildim",
+      notMeHint: "Sen değilsen şifreni hemen değiştir.",
+      close: "Kapat",
+    },
     addBadge: "Rozet ekle",
     addBadgeLabel: "Vitrine rozet ekle",
     today: "Bugün",
@@ -912,22 +927,16 @@ export const tr = {
       why: "Neden?",
       close: "Kapat",
     },
-    nextBadge: {
-      title: "Sıradaki rozetin",
-      progress: "İlerleme",
-      allEarned: "Bütün rozetleri kazandın",
-      allEarnedText: "Yeni rozetler eklenince burada görünür.",
-    },
     news: {
       eyebrow: "GÜNDEMDE · BU HAFTA",
       read: "Devamını oku",
       related: "İlgili oda",
       startWith: "{name} ile başla",
+      meta: "{date} · {minutes} dk okuma",
     },
     sections: {
       newsAndStats: "Gündem ve istatistikler",
       stats: "Oda istatistikleri",
-      roadmap: "Yol haritan",
       reports: "Son raporların",
     },
     labStats: {
@@ -943,16 +952,6 @@ export const tr = {
       mine: "Bitirdin",
       empty: "Henüz yeterli veri yok.",
       all: "Tüm odalar",
-    },
-    roadmap: {
-      toCity: "Şehre git",
-      toCityMeta: "Şehre git · {districts} mahalle, {labs} oda",
-      left: "{n} oda kaldı",
-      next: "Sıradaki: {name}",
-      starts: "Eğitimle başlar",
-      done: "Mahalleyi bitirdin",
-      soon: "Odalar hazırlanıyor",
-      progress: "{done}/{total}",
     },
     reports: {
       private: "Sadece sen görürsün",
@@ -2903,7 +2902,7 @@ export const tr = {
     home: {
       label: "Sınıfın",
       title: "Sınıfına katıl",
-      lead: "Öğretmeninin verdiği kodu gir",
+      lead: "Öğretmenin bir kod verdiyse buraya yaz",
       enterCode: "Kod gir",
       inClass: "{name} sınıfındasın",
       inClasses: "{n} sınıftasın",
@@ -4604,9 +4603,6 @@ export const tr = {
       empty: "Bu kelimeyle bir soru bulamadık. Başka bir kelime dene ya da aşağıdan bize yaz.",
     },
     new: "YENİ",
-    copyLink: "Bu sorunun bağlantısını kopyala",
-    copied: "Bağlantı kopyalandı",
-    copyFailed: "Kopyalanamadı, adres çubuğundan al",
     items: {
       about: {
         q: "{brand} nedir?",

@@ -133,6 +133,10 @@ model User {
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
   lastActiveAt        DateTime?
+  // Giriş zamanları: girişte öncekisi previousSignInAt'e geçer; ana sayfadaki "Son girişin"
+  // şeridi bir kez gösterilince previousSignInAt boşalır (hoca öncesi kontrol, 23).
+  lastSignInAt        DateTime?
+  previousSignInAt    DateTime?
   suspended           Boolean          @default(false)
   // "Hesabı sil" denince 7 gün sonrası yazılır; bu sürede giriş yapılırsa silme iptal olur.
   deletionScheduledAt DateTime?

@@ -1,5 +1,5 @@
 import { toneOf } from "@/components/roadmap/NeighborhoodIcon";
-import { dayMonth, memberSince } from "@/lib/account/dates";
+import { dayAndTime, dayMonth, memberSince } from "@/lib/account/dates";
 import { avatarOf } from "@/lib/avatars";
 import { dailyTip } from "@/lib/content/landing";
 import { db } from "@/lib/db";
@@ -10,15 +10,13 @@ import { paths, routes } from "@/lib/navigation";
 import { assignmentViews, getHomeClasses } from "@/lib/classroom/student";
 import { getLatestArticles } from "@/lib/news/data";
 import { badgeCodes } from "@/lib/progress/badges";
-import { nextBadge } from "@/lib/progress/next-badge";
 import { getProgressSummary } from "@/lib/progress/summary";
 import { ClassCard, type HomeClassData } from "./ClassCard";
+import { LastSignInStrip } from "./LastSignInStrip";
 import { LabStatsTabs, type StatRow, type StatTab } from "./LabStatsTabs";
 import { NewsCard, type NewsCardData } from "./NewsCard";
-import { NextBadgeCard } from "./NextBadgeCard";
 import { ProfileCard } from "./ProfileCard";
 import { RecentReports, type ReportItem } from "./RecentReports";
-import { RoadmapCards } from "./RoadmapCards";
 import { TodayTip } from "./TodayTip";
 
 /** "En zorlu" sekmesine girmek için labı bitirmiş olması gereken en az öğrenci (az veride oran yanıltır). */
@@ -27,15 +25,20 @@ const statRowCount = 5;
 
 /**
  * Öğrenci ana sayfası (Tur 2; tahtalar: Ana-Sayfa-Son, Ana-Sayfa-Son-Mobil): profil kartı,
- * günün ipucu, sınıf kartı ve öğretmeninin verdiği ödev (Ana-Sayfa-Odev), sıradaki rozet, gündem,
- * lab istatistikleri, yol haritası ve son raporlar. Toplu sayılarda öğrenci adı yoktur.
+ * günün ipucu, sınıf kartı ve öğretmeninin verdiği ödev (Ana-Sayfa-Odev), gündem, lab
+ * istatistikleri ve son raporlar. Toplu sayılarda öğrenci adı yoktur.
+ *
+ * 4 Kasım (hoca öncesi kontrol, 26): "Sıradaki rozetin" ve "Yol haritan" kalktı (yol haritası üst
+ * menüde). Devam düğmesi açacağı odanın adını yazar; ödev kutusu aynı odayı gösteriyorsa çıkmaz.
+ * Telefonda sıra: profil (devam), sınıf ve ödev, günün ipucu, son raporlar, gündem ve istatistikler.
+ * Girişten sonra en üstte bir kez "Son girişin" şeridi (23).
  */
 export async function StudentHome({ userId }: { userId: string }) {
   const t = getMessages().home;
   const [row, summary, city, stats, labs, neighborhoods, reportRows, now, classes] = await Promise.all([
     db.user.findUniqueOrThrow({
       where: { id: userId },
-      select: { id: true, displayName: true, gradeLevel: true, avatar: true, createdAt: true, emailVerified: true },
+      select: { id: true, displayName: true, gradeLevel: true, avatar: true, createdAt: true, emailVerified: true, previousSignInAt: true },
     }),
     getProgressSummary(userId),
     getCityView(userId),
@@ -67,17 +70,25 @@ export async function StudentHome({ userId }: { userId: string }) {
     ];
   });
 
-  const next = nextBadge(summary.badges);
   const tip = { text: dailyTip.text, reason: dailyTip.reason, date: dayMonth(now) };
   const news = await newsOf(city);
   const classData: HomeClassData = {
     classes: classes.classes,
     assignments: assignmentViews(classes.assignments, classes.classes, city.districts, neighborhoods, labs, now),
   };
+  // Devam düğmesinin odası; öğretmeninin ödevi aynı odaya götürüyorsa iki düğme aynı işi yapmasın.
+  const continueLab = city.continueHref ? views.find((lab) => labHref(lab) === city.continueHref) : undefined;
+  const sameAsHomework = !!city.continueHref && classData.assignments.some((a) => !a.finished && a.next?.href === city.continueHref);
 
   return (
     <div className="relative mx-auto flex max-w-[1200px] flex-col gap-3.5 px-4 pt-4 pb-10 lg:gap-8 lg:px-6 lg:pt-10 lg:pb-[72px]">
-      <div className="flex flex-col gap-3.5 lg:flex-row lg:flex-wrap lg:items-stretch lg:gap-5">
+      {/* Girişten sonra bir kez: önceki girişin zamanı (hoca öncesi kontrol, 23). */}
+      {row.previousSignInAt ? (
+        <div className="order-first -mb-1 lg:-mb-3">
+          <LastSignInStrip when={dayAndTime(row.previousSignInAt)} />
+        </div>
+      ) : null}
+      <div className="order-1 flex flex-col gap-3.5 lg:flex-row lg:flex-wrap lg:items-start lg:gap-5">
         <ProfileCard
           className="lg:flex-[1_1_640px]"
           data={{
@@ -91,50 +102,28 @@ export async function StudentHome({ userId }: { userId: string }) {
             earnedCount: summary.earnedCount,
             badgeTotal: badgeCodes.length,
             continueHref: city.continueHref,
+            continueName: continueLab?.name ?? null,
+            hideContinue: sameAsHomework,
           }}
-          footer={<NextBadgeCard badge={next} />}
         />
         <section aria-label={t.today} className="hidden flex-col gap-5 lg:flex lg:max-w-[380px] lg:flex-[1_1_320px]">
           <TodayTip userId={userId} fallback={tip} />
-          <ClassCard data={classData} verified={row.emailVerified} className="flex-1" />
+          <ClassCard data={classData} verified={row.emailVerified} />
         </section>
       </div>
 
-      {/* Telefon: "Bugün" şeridi (gündem, ipucu, sıradaki rozet, sınıf kartı) */}
-      <section aria-labelledby="home-today" className="mt-2 flex flex-col gap-3.5 lg:hidden">
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 id="home-today" className="m-0 font-heading text-[21px] font-bold">
-            {t.today}
-          </h2>
-          <span aria-hidden="true" className="text-[13px] text-fg-3">
-            {t.swipe}
-          </span>
-        </div>
-        <ul className="-mx-4 m-0 flex list-none snap-x snap-mandatory scroll-px-4 gap-2.5 overflow-x-auto px-4 pt-0.5 pb-1.5 [scrollbar-width:none]">
-          {news ? (
-            <li className="flex w-[300px] flex-none snap-start">
-              <NewsCard news={news} compact className="flex-1" />
-            </li>
-          ) : null}
-          <li className="flex w-[300px] flex-none snap-start">
-            <TodayTip userId={userId} fallback={tip} className="flex-1" />
-          </li>
-          <li className="flex w-[300px] flex-none snap-start">
-            <NextBadgeCard badge={next} className="flex-1" />
-          </li>
-          <li className="flex w-[300px] flex-none snap-start">
-            <ClassCard data={classData} verified={row.emailVerified} className="flex-1" />
-          </li>
-        </ul>
+      {/* Telefon: sınıf ve ödev, sonra günün ipucu (masaüstünde sağ sütunda). */}
+      <section aria-label={t.today} className="order-2 flex flex-col gap-3.5 lg:hidden">
+        <ClassCard data={classData} verified={row.emailVerified} />
+        <TodayTip userId={userId} fallback={tip} />
       </section>
 
-      <section aria-labelledby="home-stats" className="mt-2 flex flex-col gap-3.5 lg:mt-0 lg:gap-4">
+      <section aria-labelledby="home-stats" className="order-4 mt-2 flex flex-col gap-3.5 lg:order-3 lg:mt-0 lg:gap-4">
         <h2 id="home-stats" className="m-0 font-heading text-[21px] font-bold lg:text-[26px]">
-          <span className="lg:hidden">{t.sections.stats}</span>
-          <span className="hidden lg:inline">{t.sections.newsAndStats}</span>
+          {t.sections.newsAndStats}
         </h2>
-        <div className="flex flex-wrap items-stretch gap-5">
-          {news ? <NewsCard news={news} className="hidden lg:flex lg:flex-[1_1_520px]" /> : null}
+        <div className="flex flex-wrap items-stretch gap-3.5 lg:gap-5">
+          {news ? <NewsCard news={news} className="flex-[1_1_520px]" /> : null}
           <div className="flex min-w-0 flex-[1_1_460px] flex-col gap-3.5 lg:rounded-[20px] lg:border lg:border-line lg:bg-surface lg:p-5">
             <span className="hidden text-[17px] font-bold lg:block">{t.sections.stats}</span>
             <LabStatsTabs rows={labStats} />
@@ -142,11 +131,7 @@ export async function StudentHome({ userId }: { userId: string }) {
         </div>
       </section>
 
-      <div className="mt-2 lg:mt-0">
-        <RoadmapCards city={city} />
-      </div>
-
-      <div className="mt-2 lg:mt-0">
+      <div className="order-3 mt-2 lg:order-4 lg:mt-0">
         <RecentReports reports={reports} startHref={startHref} />
       </div>
     </div>
@@ -168,6 +153,9 @@ async function newsOf(city: CityView): Promise<NewsCardData | null> {
     title: article.title,
     summary: article.summary,
     date: article.day,
+    minutes: article.minutes,
+    cover: article.cover,
+    topic: article.topic ? { color: article.topic.color, icon: article.topic.icon } : null,
     href: paths.article(article.slug),
     related: lab ? { name: lab.name, href: labHref(lab) } : null,
   };

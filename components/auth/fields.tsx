@@ -2,8 +2,8 @@
 
 // Hesap formlarının ortak parçaları: alan, şifre kutusu, bildirim kutusu ve düğmeler.
 
-import { AlertTriangle, CheckCircle2, Eye, EyeOff, Info, Lock, type LucideIcon } from "lucide-react";
-import { useState, type InputHTMLAttributes, type ReactNode } from "react";
+import { AlertTriangle, ArrowBigUp, CheckCircle2, Eye, EyeOff, Info, Lock, type LucideIcon } from "lucide-react";
+import { useState, type InputHTMLAttributes, type KeyboardEvent, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { Spinner } from "@/components/status/Spinner";
 import { getMessages } from "@/lib/i18n";
@@ -71,24 +71,53 @@ export function describedBy(id: string, { hint, error }: { hint?: unknown; error
   return {};
 }
 
-/** Göster/gizle düğmeli şifre kutusu. */
-export function PasswordInput({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+/**
+ * Göster/gizle düğmeli şifre kutusu. Caps Lock açıkken kutunun altında "Büyük harf açık" yazar
+ * (tuşa basınca anlaşılır; kutudan çıkınca kaybolur).
+ */
+export function PasswordInput({ className, onKeyDown, onKeyUp, onBlur, ...props }: InputHTMLAttributes<HTMLInputElement>) {
   const t = getMessages().auth;
   const [shown, setShown] = useState(false);
+  const [capsLock, setCapsLock] = useState(false);
   const Icon = shown ? EyeOff : Eye;
+  const readCaps = (e: KeyboardEvent<HTMLInputElement>) => setCapsLock(e.getModifierState?.("CapsLock") ?? false);
   return (
-    <div className="relative">
-      <input {...props} type={shown ? "text" : "password"} className={cn(inputClass, "pr-[52px] font-mono", className)} />
-      <button
-        type="button"
-        onClick={() => setShown((v) => !v)}
-        aria-label={shown ? t.hidePassword : t.showPassword}
-        aria-pressed={shown}
-        className="absolute top-[3px] right-1 flex size-11 cursor-pointer items-center justify-center rounded-[10px] text-fg-3 hover:text-fg"
-      >
-        <Icon className="size-5" strokeWidth={2} aria-hidden="true" />
-      </button>
-    </div>
+    <>
+      <div className="relative">
+        <input
+          {...props}
+          type={shown ? "text" : "password"}
+          onKeyDown={(e) => {
+            readCaps(e);
+            onKeyDown?.(e);
+          }}
+          onKeyUp={(e) => {
+            readCaps(e);
+            onKeyUp?.(e);
+          }}
+          onBlur={(e) => {
+            setCapsLock(false);
+            onBlur?.(e);
+          }}
+          className={cn(inputClass, "pr-[52px] font-mono", className)}
+        />
+        <button
+          type="button"
+          onClick={() => setShown((v) => !v)}
+          aria-label={shown ? t.hidePassword : t.showPassword}
+          aria-pressed={shown}
+          className="absolute top-[3px] right-1 flex size-11 cursor-pointer items-center justify-center rounded-[10px] text-fg-3 hover:text-fg"
+        >
+          <Icon className="size-5" strokeWidth={2} aria-hidden="true" />
+        </button>
+      </div>
+      {capsLock ? (
+        <p role="status" data-testid="caps-lock" className="m-0 flex items-center gap-1.5 text-[13px] leading-[1.45] font-semibold text-warning-fg">
+          <ArrowBigUp className="size-4 flex-none" strokeWidth={2.2} aria-hidden="true" />
+          {t.capsLock}
+        </p>
+      ) : null}
+    </>
   );
 }
 

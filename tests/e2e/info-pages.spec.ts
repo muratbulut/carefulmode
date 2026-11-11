@@ -35,7 +35,7 @@ test.describe("SSS", () => {
     await expect(page.getByRole("heading", { level: 2 })).toHaveText("Genel");
     await expect(questions(page)).toHaveCount(6);
     await expect(page.getByRole("searchbox", { name: "Soru ara" })).toBeVisible();
-    await expect(page.getByText("Cevabını bulamadın mı?")).toBeVisible();
+    await expect(page.getByText("Cevabını bulamadın mı?").filter({ visible: true })).toBeVisible();
     await expect(page.getByText("[İLETİŞİM E-POSTASI]")).toBeVisible();
     await expectNoOverflow(page);
     expect(errors).toEqual([]);

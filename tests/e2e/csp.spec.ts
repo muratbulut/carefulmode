@@ -145,7 +145,7 @@ test("ziyaretçi sayfaları CSP ile gelir; tema betiği ve gezinme engellenmez",
   // İstemci tarafı gezinme (React verisi aynı kökten gelir).
   await page.getByRole("contentinfo").getByRole("link", { name: "SSS", exact: true }).click();
   await page.waitForURL("/sss");
-  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 }).filter({ visible: true })).toBeVisible();
 });
 
 test.describe("hesapla gezilen sayfalar", () => {

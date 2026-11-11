@@ -13,7 +13,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { emailOTP } from "better-auth/plugins";
 import { after } from "next/server";
-import { codeLength } from "@/lib/account/shared";
+import { codeLength, codeValidMinutes } from "@/lib/account/shared";
 import { brand } from "@/lib/brand";
 import { db } from "@/lib/db";
 import { codeMail, type CodePurpose } from "@/lib/mail/code-mail";
@@ -21,7 +21,7 @@ import { sendMail } from "@/lib/mail";
 import { siteUrl } from "@/lib/site";
 
 /** E-posta kodu kuralları (doküman Bölüm 8): 6 hane, 10 dakika, en fazla 5 yanlış deneme. */
-export const codeRules = { length: codeLength, expiresInSec: 10 * 60, attempts: 5 } as const;
+export const codeRules = { length: codeLength, expiresInSec: codeValidMinutes * 60, attempts: 5 } as const;
 
 const codePurposes: Record<string, CodePurpose> = {
   "email-verification": "verify",

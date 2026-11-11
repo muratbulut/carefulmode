@@ -50,3 +50,10 @@ export function dayMonth(date: Date) {
   const { day, month } = parts(date);
   return `${day} ${getMessages().profile.months[month]}`;
 }
+
+/** "7 Kasım, 21:14" (ana sayfadaki "Son girişin" şeridi) */
+export function dayAndTime(date: Date) {
+  const { day, month } = parts(date);
+  const time = new Intl.DateTimeFormat("tr-TR", { timeZone: siteTimeZone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(date);
+  return `${day} ${getMessages().profile.months[month]}, ${time}`;
+}

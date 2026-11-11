@@ -155,9 +155,7 @@ describe("SSS konuları", () => {
     expect(screen.getByText(t.faq.search.empty)).toBeInTheDocument();
   });
 
-  it("aynı anda bir cevap açık; sorunun bağlantısı kopyalanır", async () => {
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+  it("aynı anda bir cevap açık; bağlantı kopyalama düğmesi yok", async () => {
     render(<FaqExplorer initialTopic="rooms" contact={null} />);
     const locked = screen.getByRole("button", { name: /Neden bazı odalar kilitli\?/ });
     const caller = screen.getByRole("button", { name: /Odada beni arayan kim\?/ });
@@ -168,9 +166,7 @@ describe("SSS konuları", () => {
     expect(caller).toHaveAttribute("aria-expanded", "true");
 
     const panel = document.getElementById(caller.getAttribute("aria-controls")!)!;
-    await userEvent.click(within(panel).getByRole("button", { name: t.faq.copyLink }));
-    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/sss#arayan-kim`);
-    expect(await screen.findByText(t.faq.copied)).toBeInTheDocument();
+    expect(within(panel).queryByRole("button")).toBeNull();
   });
 
   it("sorunun bağlantısıyla gelince konusu ve cevabı açık gelir", () => {

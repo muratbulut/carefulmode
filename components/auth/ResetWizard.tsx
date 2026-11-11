@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, AtSign, Check, KeyRound, LockKeyhole, MailCheck, MailOpen } from "lucide-react";
+import { ArrowLeft, AtSign, Check, KeyRound, LockKeyhole, LogOut, MailCheck, MailOpen } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useMemo, useState, useTransition } from "react";
 import { checkResetCode, requestPasswordReset, resetPassword } from "@/lib/account/actions";
@@ -121,6 +121,9 @@ export function ResetWizard() {
           <Check className="size-10 text-success" strokeWidth={2.6} aria-hidden="true" />
         </span>
         <AuthHeading title={r.doneTitle} lead={r.doneText} />
+        <Notice tone="good" icon={LogOut} className="w-full text-left">
+          {r.signedOutEverywhere}
+        </Notice>
         <Link href={routes.signIn} className={primaryButtonClass}>
           {r.signIn}
         </Link>
